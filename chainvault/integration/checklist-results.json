@@ -1,0 +1,179 @@
+{
+  "timestamp": "2025-11-17T13:25:51.053Z",
+  "summary": {
+    "total": 24,
+    "passed": 18,
+    "warnings": 6,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "name": "Backend URL configured",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.031Z"
+    },
+    {
+      "name": "Frontend URL configured",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.031Z"
+    },
+    {
+      "name": "API key configured",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.031Z"
+    },
+    {
+      "name": "WebSocket URL configured",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.031Z"
+    },
+    {
+      "name": "Blockchain configured",
+      "passed": false,
+      "message": "Contract not deployed yet",
+      "severity": "warning",
+      "timestamp": "2025-11-17T13:25:51.031Z"
+    },
+    {
+      "name": "Demo settings valid",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.031Z"
+    },
+    {
+      "name": "Integration file exists: config.js",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.031Z"
+    },
+    {
+      "name": "Integration file exists: api-client.js",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.032Z"
+    },
+    {
+      "name": "Integration file exists: contract-client.js",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.032Z"
+    },
+    {
+      "name": "Integration file exists: frontend-integration.js",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.032Z"
+    },
+    {
+      "name": "Integration file exists: health-check.js",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.032Z"
+    },
+    {
+      "name": "Integration file exists: test-e2e.js",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.032Z"
+    },
+    {
+      "name": "Backend API responding",
+      "passed": false,
+      "message": "Error: fetch failed",
+      "severity": "warning",
+      "timestamp": "2025-11-17T13:25:51.050Z"
+    },
+    {
+      "name": "Frontend responding",
+      "passed": false,
+      "message": "Error: fetch failed",
+      "severity": "warning",
+      "timestamp": "2025-11-17T13:25:51.051Z"
+    },
+    {
+      "name": "Frontend server running",
+      "passed": false,
+      "message": "Run: cd frontend && npm run dev",
+      "severity": "warning",
+      "timestamp": "2025-11-17T13:25:51.052Z"
+    },
+    {
+      "name": "Backend server running",
+      "passed": false,
+      "message": "Run: cd backend && npm run dev",
+      "severity": "warning",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "Smart contract deployed",
+      "passed": false,
+      "message": "Waiting for Dev 1 to deploy",
+      "severity": "warning",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "RPC endpoint configured",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "Network valid",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "Demo user: supplier",
+      "passed": true,
+      "message": "ACME Corp",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "Demo user: buyer",
+      "passed": true,
+      "message": "MegaRetail",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "Demo user: logistics",
+      "passed": true,
+      "message": "FastShip",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "Demo user: regulator",
+      "passed": true,
+      "message": "TradeComm",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    },
+    {
+      "name": "Oracle configuration valid",
+      "passed": true,
+      "message": "",
+      "severity": "error",
+      "timestamp": "2025-11-17T13:25:51.053Z"
+    }
+  ]
+}
