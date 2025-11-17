@@ -1,231 +1,214 @@
-# Specification: ChainVault Privacy-Preserving Supply Chain
+# ChainVault Hackathon Spec - 24 Hour Build
 
-## Goal
-Build a privacy-preserving supply chain contract automation system on Midnight blockchain that enables automatic contract evaluation and execution while keeping sensitive business data private through zero-knowledge proofs and selective disclosure.
+## 🎯 Demo Scenarios (2 minutes max)
 
-## User Stories
-- As a **supplier**, I want to create purchase orders with automated payment triggers so that I get paid immediately when delivery conditions are met
-- As a **buyer**, I want to verify quality and delivery compliance without exposing my pricing agreements so that I maintain competitive advantage
-- As a **logistics provider**, I want to confirm deliveries and trigger contract milestones so that the supply chain flows smoothly
-- As a **compliance officer**, I want to verify regulatory compliance without accessing sensitive business data so that I can ensure proper governance
-- As a **contract approver**, I want to review and approve contracts in sequence so that proper authorization is maintained
+### Primary Flow: Private Purchase with Auto-Payment
+1. **Supplier creates contract** with private pricing ($10,000 for 100 units)
+2. **Buyer approves** - sees only "100 units" via ZK proof, NOT the price
+3. **Oracle triggers delivery** confirmation (GPS location reached)
+4. **Instant payment releases** - automatic, no manual intervention
+5. **Regulator views compliance** - sees proof of delivery without commercial details
 
-## Core Requirements
-- Create and manage four essential contract types: purchase orders, shipping confirmations, quality verification, and payment releases
-- Process all sensitive contract data locally on user devices with client-side ZK proof generation
-- Submit only zero-knowledge proofs to Midnight blockchain for immutable verification
-- Simulate IoT sensor data (temperature, GPS, quality metrics) through mock oracles
-- Enable three distinct user roles with specific permissions and workflows
-- Support sequential approval workflows (supplier → buyer → logistics)
-- Automatically evaluate contract conditions based on mock supply chain events
-- Trigger self-executing payments when all conditions are satisfied
-- Generate compliance verification proofs without revealing private contract terms
+### What Makes It Impressive
+- **Visual Privacy**: Split screen showing different views for each party
+- **Real ZK Proofs**: Actual proof generation on Midnight (not mocked)
+- **Instant Settlement**: Payment releases in seconds when conditions met
+- **Beautiful UI**: Professional, animated, clearly shows the "magic"
 
-## Visual Design
-No mockups provided - design will follow standard enterprise dashboard patterns with:
-- Clean, data-focused interface optimized for 1920x1080 desktop resolution
-- Contract management dashboard with status overview
-- Contract creation forms with multi-step wizards
-- Approval queue interface for pending contracts
-- Event monitoring panel for oracle data streams
-- Compliance verification interface with proof generation
+---
 
-## Reusable Components
-### Existing Code to Leverage
-- No existing codebase - this is a greenfield project
-- Will establish foundational patterns for future features
+## 🚀 Simplified Architecture (24 Hour Scope)
 
-### New Components Required
-- **Smart Contract Engine**: Core Compact contracts for Midnight blockchain
-- **ZK Proof Generator**: Client-side proof generation library
-- **Mock Oracle Service**: Simulated IoT/GPS data pipeline
-- **Contract Manager UI**: React components for contract lifecycle
-- **Approval Workflow Engine**: Sequential approval state machine
-- **Payment Trigger Service**: Automated payment execution logic
-- **Compliance Verifier**: Proof generation and verification interface
-- **Role-Based Access Control**: Authentication and authorization system
-
-## Technical Architecture
-
-### System Components
-1. **Frontend Application** (Next.js 14 with App Router)
-   - Desktop-only interface using React and Tailwind CSS
-   - Local contract data processing and storage
-   - Client-side ZK proof generation
-   - JWT-based authentication
-
-2. **Backend Services** (Node.js/TypeScript)
-   - REST API for contract management
-   - Mock oracle data generation service
-   - Sequential workflow orchestration
-   - Role-based access control
-
-3. **Blockchain Layer** (Midnight)
-   - Compact smart contracts for contract logic
-   - ZK proof verification
-   - Immutable contract state storage
-   - Event emission for contract updates
-
-4. **Data Storage**
-   - PostgreSQL for off-chain metadata
-   - Redis for session management and caching
-   - Local browser storage for sensitive data
-
-### Data Models
-
+### Smart Contract (1 Contract Only)
 ```typescript
-// Core entities (conceptual structure)
-Contract {
-  id: string
-  type: 'purchase_order' | 'shipping' | 'quality' | 'payment'
-  status: 'draft' | 'pending_approval' | 'active' | 'completed'
-  parties: Party[]
-  conditions: Condition[]
-  proofHashes: string[]
-  createdBy: string
-  approvalChain: Approval[]
-}
-
-Party {
-  id: string
-  role: 'supplier' | 'buyer' | 'logistics'
-  publicKey: string
-  permissions: Permission[]
-}
-
-Condition {
-  id: string
-  type: 'delivery' | 'quality' | 'payment' | 'timing'
-  parameters: Map<string, any>
-  verificationProof: string
-  status: 'pending' | 'met' | 'failed'
-}
-
-OracleEvent {
-  id: string
-  source: 'temperature' | 'gps' | 'quality'
-  contractId: string
-  data: Map<string, any>
-  timestamp: number
-  mockGenerated: boolean
-}
+// Single Compact contract: PurchaseDeliveryContract
+- createOrder(encryptedPrice, quantity, deliveryLocation)
+- approveOrder(orderId, zkProof)
+- confirmDelivery(orderId, gpsProof)
+- getOrderView(orderId, role) // Different data per role
 ```
 
-## API Design
+### Backend (Minimal Express Server)
+```javascript
+// In-memory only - no databases
+const contracts = {}; // Store contract state
+const events = [];    // Event stream
+const users = {       // Hardcoded demo users
+  supplier: { role: 'supplier', name: 'ACME Corp' },
+  buyer: { role: 'buyer', name: 'MegaRetail' },
+  logistics: { role: 'logistics', name: 'FastShip' },
+  regulator: { role: 'regulator', name: 'TradeComm' }
+};
+```
 
-### REST Endpoints
-- `POST /api/contracts` - Create new contract
-- `GET /api/contracts` - List contracts (filtered by role)
-- `GET /api/contracts/{id}` - Get contract details
-- `PUT /api/contracts/{id}/approve` - Approve contract in sequence
-- `POST /api/contracts/{id}/verify` - Generate compliance proof
-- `GET /api/oracle/events` - Stream mock oracle events
-- `POST /api/oracle/simulate` - Trigger mock event generation
-- `POST /api/payments/trigger` - Execute payment based on conditions
-- `GET /api/users/role` - Get current user role and permissions
+### Frontend (Multi-Party Dashboard)
+- **4 Role Views**: Supplier, Buyer, Logistics, Regulator
+- **Single Page App**: Tab/toggle between roles (no login needed)
+- **Real-time Updates**: WebSocket for instant UI updates
+- **ZK Proof Visualization**: Animated proof generation process
 
-### Midnight Blockchain Interface
-- Deploy Compact contracts for each contract type
-- Submit ZK proofs for condition verification
-- Query contract state without exposing private data
-- Listen for blockchain events for state updates
+---
 
-## Security Considerations
+## 👥 Team Distribution (24 Hours)
 
-### Privacy Protection
-- All sensitive contract data processed locally on client devices
-- Only ZK proofs submitted to blockchain
-- No private business terms stored on-chain
-- Selective disclosure for compliance verification
+### Dev 1: Midnight Blockchain Specialist
+**Hours 1-20** (4 hours buffer for integration)
+- [ ] Set up Midnight testnet environment
+- [ ] Write single PurchaseDeliveryContract in Compact
+- [ ] Implement ZK proof generation for price privacy
+- [ ] Deploy contract and test basic functions
+- [ ] Create proof verification utilities
 
-### Authentication & Authorization
-- JWT tokens for session management
-- Role-based access control (RBAC) for three user types
-- Sequential approval enforcement at smart contract level
-- Public key cryptography for party identification
+**Deliverable**: Working contract on testnet with proof generation
 
-### Data Security
-- TLS encryption for all API communications
-- Encrypted local storage for sensitive data
-- Secure key management for blockchain interactions
-- Audit logs for all contract operations
+### Dev 2: Backend + Oracle Developer
+**Hours 1-16** (8 hours for integration)
+- [ ] Express server with WebSocket support
+- [ ] In-memory contract state management
+- [ ] Mock GPS oracle (triggers every 30 seconds for demo)
+- [ ] Simple API: POST /order, PUT /approve, POST /deliver
+- [ ] WebSocket events for real-time updates
 
-## Testing Strategy
+**Deliverable**: Running API that connects to smart contract
 
-### Unit Testing
-- Smart contract logic validation
-- ZK proof generation correctness
-- Mock oracle data generation
-- API endpoint functionality
-- React component behavior
+### Dev 3: Frontend UI Developer
+**Hours 1-20** (4 hours for polish)
+- [ ] Next.js app with 4 role dashboards
+- [ ] Contract creation wizard (supplier view)
+- [ ] Approval interface with ZK proof viz (buyer view)
+- [ ] Delivery tracker with map (logistics view)
+- [ ] Compliance dashboard (regulator view)
+- [ ] Beautiful animations and transitions
 
-### Integration Testing
-- End-to-end contract lifecycle
-- Sequential approval workflow
-- Oracle event processing
-- Payment trigger execution
-- Compliance proof generation
+**Deliverable**: Stunning multi-role interface
 
-### Security Testing
-- Role-based access enforcement
-- Privacy preservation validation
-- Smart contract vulnerability assessment
-- API authentication testing
+### Dev 4: Integration & Demo Orchestrator
+**Hours 8-24** (starts after others have basics)
+- [ ] Connect frontend to backend
+- [ ] Wire backend to smart contract
+- [ ] Create demo data and flow
+- [ ] Build presentation deck
+- [ ] Record backup demo video
+- [ ] Prepare live demo script
 
-### Performance Testing
-- ZK proof generation speed
-- Contract query performance
-- Mock oracle throughput
-- UI responsiveness at scale
+**Deliverable**: Working end-to-end demo with backup
 
-## Implementation Phases
+---
 
-### Phase 1: Foundation (Week 1)
-- Set up Midnight development environment
-- Create basic Compact smart contracts
-- Implement mock oracle service
-- Build authentication system
+## 🎨 UI/UX Focus (Must Look Amazing)
 
-### Phase 2: Core Features (Week 2)
-- Develop contract creation UI
-- Implement sequential approval workflow
-- Add ZK proof generation
-- Create compliance verification
+### Visual Elements
+- **Color Coding**: Each role has distinct color theme
+- **Privacy Indicators**: 🔒 Locked vs 🔓 Revealed data
+- **Proof Animation**: Visual representation of ZK proof generation
+- **Real-time Notifications**: Toast messages for events
+- **Map Visualization**: Show delivery progress on map
+- **Status Timeline**: Visual flow of contract lifecycle
 
-### Phase 3: Integration (Week 3)
-- Connect frontend to smart contracts
-- Integrate mock oracle events
-- Implement payment triggers
-- Complete role-based access
+### Key Screens
+1. **Supplier Dashboard**: Create order, see payment status
+2. **Buyer Dashboard**: Approve orders, verify quantity (not price)
+3. **Logistics View**: GPS tracker, delivery confirmation
+4. **Regulator View**: Compliance proofs, audit trail
 
-### Phase 4: Polish (Week 4)
-- UI/UX refinements
-- Performance optimization
-- Security hardening
-- Documentation completion
+---
 
-## Out of Scope
-- Cross-chain interoperability
-- Real oracle provider integrations
-- Mobile interface or responsive design
-- ERP system integrations (SAP, Oracle SCM)
-- Advanced analytics and reporting dashboards
-- Parallel approval workflows
-- System administrator role
-- Multi-signature beyond sequential approval
-- Partner network discovery
-- Predictive contract analytics
-- Cross-chain bridges
-- Integration with existing payment systems
+## 🏃‍♂️ Hour-by-Hour Timeline
 
-## Success Criteria
-- Successfully create and execute all four contract types through complete lifecycle
-- Generate valid ZK proofs that verify on Midnight blockchain
-- Achieve sub-3 second proof generation time for standard contracts
-- Process 100+ mock oracle events per minute without performance degradation
-- Complete sequential approval workflow in under 5 user interactions
-- Verify compliance without exposing any private contract data
-- Automatically trigger payments within 10 seconds of condition satisfaction
-- Support 50+ concurrent users on desktop interface
-- Pass all security tests with zero critical vulnerabilities
-- Achieve 90% code coverage in unit tests
+### Hours 0-6: Foundation
+- All devs: Environment setup, initial scaffolding
+- Dev 1: Contract structure
+- Dev 2: Server boilerplate
+- Dev 3: UI framework
+
+### Hours 6-12: Core Features
+- Dev 1: ZK proof implementation
+- Dev 2: API endpoints
+- Dev 3: Role dashboards
+- Dev 4: Joins, starts integration planning
+
+### Hours 12-18: Integration
+- Dev 1: Contract deployment, testing
+- Dev 2: Connect to contract
+- Dev 3: Connect UI to API
+- Dev 4: Wire everything together
+
+### Hours 18-22: Polish & Demo Prep
+- All: Bug fixes, polish
+- Dev 4: Demo script, presentation
+
+### Hours 22-24: Final Testing
+- Practice demo
+- Backup video recording
+- Final adjustments
+
+---
+
+## ✂️ What We're CUTTING (Not Needed for Demo)
+
+### Cut Completely:
+- PostgreSQL, Redis (use in-memory)
+- Authentication system (hardcoded users)
+- Multiple contract types (just one)
+- ERP integrations
+- Analytics dashboard
+- Mobile responsiveness
+- Comprehensive test suites
+- Production error handling
+
+### Simplify to Mock:
+- Oracle data (hardcoded GPS progression)
+- Multi-party signatures (instant approval)
+- Complex approval workflows (simple approve/reject)
+- User management (4 hardcoded demo users)
+
+---
+
+## 🎯 Success Metrics (What Judges See)
+
+1. **Working Demo**: Full flow from order to payment
+2. **Real ZK Proofs**: Actual Midnight blockchain interaction
+3. **Privacy Demonstration**: Clear visual of hidden vs revealed data
+4. **Speed**: Instant payment on delivery (<3 seconds)
+5. **Professional UI**: Looks like a real product
+6. **Clear Value Prop**: Solving real supply chain problem
+
+---
+
+## 🚨 Risk Mitigation
+
+### If Midnight Integration Fails:
+- Fallback: Local blockchain simulation
+- Still show ZK proof concepts
+- Focus on UI/UX excellence
+
+### If Time Runs Short:
+- Priority 1: One complete flow working
+- Priority 2: Beautiful UI
+- Priority 3: Multiple roles
+- Priority 4: Real-time updates
+
+### Demo Backup Plan:
+- Record video of working demo
+- Have local version ready
+- Prepare slides explaining technical architecture
+
+---
+
+## 📝 Presentation Structure (3 minutes)
+
+1. **Problem** (30 sec): Supply chains need privacy AND transparency
+2. **Solution** (30 sec): ChainVault with Midnight's ZK proofs
+3. **Live Demo** (90 sec): Show the complete flow
+4. **Technology** (30 sec): How Midnight makes this possible
+5. **Impact** (30 sec): Market size, user benefits
+
+---
+
+## 🔥 The "Wow" Moments
+
+1. **Split Screen Privacy**: Same contract, different views per role
+2. **ZK Proof Animation**: Visual showing proof generation
+3. **Instant Payment**: Watch funds release automatically
+4. **GPS Trigger**: Real-time map showing delivery = payment
+5. **Compliance Without Exposure**: Regulator sees proof, not data
