@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChainVault WebSocket Test</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: #2d3748;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .controls {
+      padding: 20px;
+      border-bottom: 2px solid #e2e8f0;
+      background: #f7fafc;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .status.connected {
+      background: #48bb78;
+      color: white;
+    }
+
+    .status.disconnected {
+      background: #f56565;
+      color: white;
+    }
+
+    .status.connecting {
+      background: #ed8936;
+      color: white;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .events {
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .event {
+      background: #f7fafc;
+      border-left: 4px solid #667eea;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .event.connection {
+      border-left-color: #48bb78;
+    }
+
+    .event.contract_update {
+      border-left-color: #ed8936;
+    }
+
+    .event.event_created {
+      border-left-color: #4299e1;
+    }
+
+    .event-type {
+      font-weight: bold;
+      color: #2d3748;
+      margin-bottom: 5px;
+    }
+
+    .event-time {
+      color: #718096;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .event-data {
+      color: #4a5568;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .clear-btn {
+      background: #f56565;
+    }
+
+    .clear-btn:hover {
+      background: #e53e3e;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>ChainVault WebSocket Test Client</h1>
+      <p>Real-time connection testing for backend API</p>
+    </div>
+
+    <div class="controls">
+      <div>
+        <span id="status" class="status disconnected">Disconnected</span>
+      </div>
+      <div>
+        <button id="connectBtn" onclick="connect()">Connect</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+        <button onclick="sendPing()">Send Ping</button>
+        <button class="clear-btn" onclick="clearEvents()">Clear Events</button>
+      </div>
+    </div>
+
+    <div class="events" id="events">
+      <div style="text-align: center; color: #718096; padding: 40px;">
+        No events yet. Click "Connect" to start.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    const WS_URL = 'ws://localhost:3001';
+
+    function updateStatus(status, text) {
+      const statusEl = document.getElementById('status');
+      statusEl.className = `status ${status}`;
+      statusEl.textContent = text;
+    }
+
+    function connect() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        addEvent('info', 'Already connected');
+        return;
+      }
+
+      updateStatus('connecting', 'Connecting...');
+
+      try {
+        ws = new WebSocket(WS_URL);
+
+        ws.onopen = () => {
+          console.log('WebSocket connected');
+          updateStatus('connected', 'Connected');
+          document.getElementById('connectBtn').disabled = true;
+          document.getElementById('disconnectBtn').disabled = false;
+        };
+
+        ws.onmessage = (event) => {
+          console.log('Message received:', event.data);
+          try {
+            const data = JSON.parse(event.data);
+            addEvent(data.type || 'message', JSON.stringify(data, null, 2), data);
+          } catch (error) {
+            addEvent('error', 'Failed to parse message: ' + event.data);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          addEvent('error', 'WebSocket error occurred');
+        };
+
+        ws.onclose = () => {
+          console.log('WebSocket disconnected');
+          updateStatus('disconnected', 'Disconnected');
+          document.getElementById('connectBtn').disabled = false;
+          document.getElementById('disconnectBtn').disabled = true;
+        };
+      } catch (error) {
+        console.error('Connection error:', error);
+        updateStatus('disconnected', 'Connection failed');
+        addEvent('error', 'Failed to connect: ' + error.message);
+      }
+    }
+
+    function disconnect() {
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+    }
+
+    function sendPing() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        addEvent('error', 'Not connected. Click Connect first.');
+        return;
+      }
+
+      const message = { type: 'ping', timestamp: new Date().toISOString() };
+      ws.send(JSON.stringify(message));
+      addEvent('sent', JSON.stringify(message, null, 2));
+    }
+
+    function addEvent(type, message, data = null) {
+      const eventsEl = document.getElementById('events');
+
+      // Clear "no events" message
+      if (eventsEl.children.length === 1 && eventsEl.children[0].textContent.includes('No events yet')) {
+        eventsEl.innerHTML = '';
+      }
+
+      const eventEl = document.createElement('div');
+      eventEl.className = `event ${type}`;
+
+      const typeEl = document.createElement('div');
+      typeEl.className = 'event-type';
+      typeEl.textContent = type.toUpperCase();
+
+      const timeEl = document.createElement('div');
+      timeEl.className = 'event-time';
+      timeEl.textContent = new Date().toLocaleTimeString();
+
+      const dataEl = document.createElement('div');
+      dataEl.className = 'event-data';
+      dataEl.textContent = message;
+
+      eventEl.appendChild(typeEl);
+      eventEl.appendChild(timeEl);
+      eventEl.appendChild(dataEl);
+
+      eventsEl.insertBefore(eventEl, eventsEl.firstChild);
+
+      // Keep only last 50 events
+      while (eventsEl.children.length > 50) {
+        eventsEl.removeChild(eventsEl.lastChild);
+      }
+    }
+
+    function clearEvents() {
+      const eventsEl = document.getElementById('events');
+      eventsEl.innerHTML = '<div style="text-align: center; color: #718096; padding: 40px;">Events cleared.</div>';
+    }
+
+    // Auto-connect on page load
+    window.addEventListener('load', () => {
+      console.log('Page loaded, auto-connecting to WebSocket...');
+      setTimeout(connect, 500);
+    });
+  </script>
+</body>
+</html>
