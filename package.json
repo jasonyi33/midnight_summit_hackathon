@@ -1,0 +1,48 @@
+{
+  "name": "chainvault",
+  "version": "1.0.0",
+  "description": "Privacy-preserving supply chain management on Midnight blockchain",
+  "type": "module",
+  "scripts": {
+    "compile": "compact compile contracts/PurchaseDeliveryContract.compact contracts/managed/purchase-delivery",
+    "build": "tsc",
+    "deploy": "node dist/deploy.js",
+    "create-order": "node dist/create-order.js",
+    "approve-order": "node dist/approve-order.js",
+    "deliver-order": "node dist/deliver-order.js",
+    "view-order": "node dist/view-order.js"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.8.1",
+    "@midnight-ntwrk/ledger": "^4.0.0",
+    "@midnight-ntwrk/midnight-js-contracts": "2.0.2",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "2.0.2",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "2.0.2",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "2.0.2",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "2.0.2",
+    "@midnight-ntwrk/midnight-js-network-id": "2.0.2",
+    "@midnight-ntwrk/midnight-js-types": "2.0.2",
+    "@midnight-ntwrk/wallet": "5.0.0",
+    "@midnight-ntwrk/wallet-api": "5.0.0",
+    "@midnight-ntwrk/zswap": "^4.0.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.4.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasonyi33/midnight_summit_hackathon.git"
+  },
+  "keywords": [
+    "midnight",
+    "blockchain",
+    "supply-chain",
+    "privacy",
+    "zero-knowledge"
+  ],
+  "author": "",
+  "license": "ISC"
+}
