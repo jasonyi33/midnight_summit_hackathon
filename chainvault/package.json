@@ -1,0 +1,21 @@
+{
+  "name": "chainvault",
+  "version": "1.0.0",
+  "description": "Privacy-Preserving Supply Chain - Hackathon Build",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "test:integration": "cd integration && npm test",
+    "demo": "node demo/run-demo.js",
+    "demo:record": "node demo/record-demo.js",
+    "setup": "node scripts/setup.js",
+    "clean": "node scripts/clean.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": ["blockchain", "supply-chain", "midnight", "zk-proof"],
+  "author": "ChainVault Team",
+  "license": "MIT"
+}
