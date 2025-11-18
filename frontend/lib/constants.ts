@@ -2,26 +2,30 @@
 
 import { UserRole } from './types';
 
-export const ROLE_COLORS: Record<UserRole, { primary: string; bg: string; text: string }> = {
+export const ROLE_COLORS: Record<UserRole, { primary: string; bg: string; text: string; border: string }> = {
   supplier: {
     primary: '#10B981', // green
     bg: 'bg-emerald-50',
-    text: 'text-emerald-700'
+    text: 'text-emerald-700',
+    border: 'border-emerald-200'
   },
   buyer: {
     primary: '#3B82F6', // blue
     bg: 'bg-blue-50',
-    text: 'text-blue-700'
+    text: 'text-blue-700',
+    border: 'border-blue-200'
   },
   logistics: {
     primary: '#F59E0B', // amber
     bg: 'bg-amber-50',
-    text: 'text-amber-700'
+    text: 'text-amber-700',
+    border: 'border-amber-200'
   },
   regulator: {
     primary: '#8B5CF6', // purple
     bg: 'bg-purple-50',
-    text: 'text-purple-700'
+    text: 'text-purple-700',
+    border: 'border-purple-200'
   }
 };
 

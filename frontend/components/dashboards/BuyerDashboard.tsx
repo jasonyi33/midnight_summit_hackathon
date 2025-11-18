@@ -65,40 +65,42 @@ export default function BuyerDashboard({ user, orders, onApproveOrder }: BuyerDa
 
       {/* Pending Approvals */}
       {pendingOrders.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Eye size={24} className="text-blue-600" />
+        <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-lg">
+              <Eye size={24} className="text-white" />
+            </div>
             Pending Approvals
           </h2>
 
           <div className="space-y-4">
             {pendingOrders.map((order) => (
-              <div key={order.id} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+              <div key={order.id} className="border-2 border-blue-200 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-white">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="font-mono text-sm text-gray-600">{order.id}</span>
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="font-mono text-sm text-gray-600 bg-white px-3 py-1.5 rounded-md shadow-sm">{order.id}</span>
                     </div>
 
-                    <div className="space-y-2 mb-4">
+                    <div className="space-y-3 mb-6">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Quantity:</span>
-                        <span className="font-medium">{order.quantity} units</span>
+                        <span className="text-sm font-semibold text-gray-700">Quantity:</span>
+                        <span className="font-bold text-gray-900">{order.quantity} units</span>
                         <PrivacyBadge isLocked={false} />
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Price:</span>
-                        <span className="font-medium text-gray-400">Hidden</span>
+                        <span className="text-sm font-semibold text-gray-700">Price:</span>
+                        <span className="font-bold text-gray-400">Hidden</span>
                         <PrivacyBadge isLocked={true} />
-                        <span className="text-xs text-gray-500 ml-2">
+                        <span className="text-xs text-blue-600 ml-2 font-medium">
                           Protected by Zero-Knowledge Proof
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Delivery Location:</span>
-                        <span className="font-mono text-sm">
+                        <span className="text-sm font-semibold text-gray-700">Delivery Location:</span>
+                        <span className="font-mono text-sm font-medium text-gray-900">
                           {order.deliveryLocation.lat.toFixed(4)}, {order.deliveryLocation.lng.toFixed(4)}
                         </span>
                       </div>
@@ -107,7 +109,7 @@ export default function BuyerDashboard({ user, orders, onApproveOrder }: BuyerDa
                     <button
                       onClick={() => handleApprove(order)}
                       disabled={generatingProof && selectedOrder?.id === order.id}
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                     >
                       {generatingProof && selectedOrder?.id === order.id
                         ? 'Generating ZK Proof...'
@@ -127,13 +129,18 @@ export default function BuyerDashboard({ user, orders, onApproveOrder }: BuyerDa
       )}
 
       {/* All Orders */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">All Orders</h2>
+      <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">All Orders</h2>
 
         {buyerOrders.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No orders yet.</p>
+          <div className="text-center py-12">
+            <div className="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <ShoppingCart className="text-blue-600" size={32} />
+            </div>
+            <p className="text-gray-600 text-lg">No orders yet</p>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {buyerOrders.map((order) => (
               <BuyerOrderCard key={order.id} order={order} />
             ))}
@@ -151,14 +158,14 @@ function StatCard({ icon, label, value, bgColor }: {
   bgColor: string;
 }) {
   return (
-    <div className={`${bgColor} rounded-lg p-4 border border-gray-100`}>
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-white rounded-md">
+    <div className="bg-white rounded-xl p-6 border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+      <div className="flex items-center gap-4">
+        <div className={`${bgColor} p-3 rounded-lg`}>
           {icon}
         </div>
         <div>
-          <p className="text-sm text-gray-600">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
         </div>
       </div>
     </div>
@@ -167,38 +174,38 @@ function StatCard({ icon, label, value, bgColor }: {
 
 function BuyerOrderCard({ order }: { order: Order }) {
   const statusColors = {
-    pending_approval: 'bg-amber-100 text-amber-800',
-    approved: 'bg-blue-100 text-blue-800',
-    in_transit: 'bg-purple-100 text-purple-800',
-    delivered: 'bg-green-100 text-green-800',
-    payment_released: 'bg-emerald-100 text-emerald-800'
+    pending_approval: 'bg-amber-100 text-amber-700 border-amber-200',
+    approved: 'bg-blue-100 text-blue-700 border-blue-200',
+    in_transit: 'bg-purple-100 text-purple-700 border-purple-200',
+    delivered: 'bg-green-100 text-green-700 border-green-200',
+    payment_released: 'bg-emerald-100 text-emerald-700 border-emerald-200'
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+    <div className="border border-blue-100 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all bg-white">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="font-mono text-sm text-gray-500">{order.id}</span>
-            <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[order.status]}`}>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="font-mono text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-md">{order.id}</span>
+            <span className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusColors[order.status]}`}>
               {order.status.replace(/_/g, ' ').toUpperCase()}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-3 gap-6 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-gray-600">Quantity:</span>
-              <span className="ml-2 font-medium">{order.quantity} units</span>
+              <span className="text-gray-500 font-medium">Quantity:</span>
+              <span className="ml-2 font-bold text-gray-900">{order.quantity} units</span>
               <PrivacyBadge isLocked={false} />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-600">Price:</span>
-              <span className="ml-2 font-medium text-gray-400">Hidden</span>
+              <span className="text-gray-500 font-medium">Price:</span>
+              <span className="ml-2 font-bold text-gray-400">Hidden</span>
               <PrivacyBadge isLocked={true} />
             </div>
             {order.zkProof && (
               <div className="col-span-1">
-                <span className="text-gray-600">ZK Proof:</span>
-                <span className="ml-2 font-mono text-xs text-green-600">Verified</span>
+                <span className="text-gray-500 font-medium">ZK Proof:</span>
+                <span className="ml-2 font-mono text-xs font-bold text-green-600">Verified</span>
               </div>
             )}
           </div>
