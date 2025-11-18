@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "test": "echo \"No tests for hackathon build\" && exit 0"
+    "test": "node comprehensive-test.js && node test-phase3-blockchain.js && node test-oracle-tracking.js && node test-websocket-concurrency.js",
+    "test:comprehensive": "node comprehensive-test.js",
+    "test:blockchain": "node test-phase3-blockchain.js",
+    "test:oracle": "node test-oracle-tracking.js",
+    "test:websocket": "node test-websocket-concurrency.js"
   },
   "keywords": [
     "midnight",
