@@ -1,0 +1,19 @@
+task_groups:
+  - name: "Phase 1: Setup (Hours 0-4)"
+    claude_code_subagent: midnight-developer
+    standards:
+      - global/*
+      - backend/*
+      - docs/*
+  - name: "Phase 2: Core Contract (Hours 4-12)"
+    claude_code_subagent: midnight-developer
+    standards:
+      - global/*
+      - backend/*
+      - docs/*
+  - name: "Phase 3: Deploy & Test (Hours 12-20)"
+    claude_code_subagent: midnight-developer
+    standards:
+      - global/*
+      - backend/*
+      - docs/*

@@ -1,11 +1,9 @@
 {
-  "contractAddress": "PENDING_DEPLOYMENT",
-  "deployedAt": "2025-11-17T14:30:00.000Z",
+  "contractAddress": "0200826490ba089f9c3c5e26625ccdd6c902500503bb1b4795fd993b1707e1d0ee9a",
+  "deployedAt": "2025-11-18T10:05:33.709Z",
   "network": "testnet-02",
   "walletAddress": "mn_shield-addr_test1n9jruu8rd4jqpl6wmukukdxg2h4fe4pw7tfw266vr8edf86sfv6sxqyqter2v3rvysx5apk439znxj6kmlsf9835uyk4mz49ssavqgqe4gldjmv5",
-  "walletSeed": "595e7be278ed303d081fd0443d1e11a9d0541a12a2018e8a78cd482cb59a5c45",
   "contractName": "PurchaseDeliveryContract",
-  "status": "AWAITING_TESTNET_FUNDS",
   "features": [
     "Encrypted price storage",
     "ZK proof generation for quantity",
@@ -13,12 +11,12 @@
     "Role-based selective disclosure",
     "GPS-verified delivery confirmation"
   ],
-  "instructions": {
-    "toDeployManually": [
-      "1. Fund wallet address with tDUST from https://midnight.network/test-faucet",
-      "2. Run: npm run deploy",
-      "3. Use existing wallet seed when prompted: 595e7be278ed303d081fd0443d1e11a9d0541a12a2018e8a78cd482cb59a5c45",
-      "4. Contract will deploy and this file will be updated with contractAddress"
-    ]
+  "serviceWallet": {
+    "note": "Backend uses a separate service wallet for API transactions",
+    "address": "mn_shield-addr_test123e2lq4n33ghaj60m0jkda9qhry24e24a6jcrhz4gq5vl8yg38qqxqxl5eyqwgd3jaaakrtssqn62d7xxfpntu5pthqmxq6zpfvgm03a5sxd0ukg",
+    "seed": "Configured in backend/.env (MIDNIGHT_SERVICE_WALLET_SEED)",
+    "balance": "0 tDUST",
+    "status": "NEEDS_FUNDING",
+    "instructions": "Fund at https://faucet.midnight.network"
   }
 }

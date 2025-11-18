@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { UserRole, Order } from '@/lib/types';
 import { DEMO_USERS } from '@/lib/constants';
 import RoleSwitcher from '@/components/RoleSwitcher';
+import WalletConnect from '@/components/WalletConnect';
 import SupplierDashboard from '@/components/dashboards/SupplierDashboard';
 import BuyerDashboard from '@/components/dashboards/BuyerDashboard';
 import LogisticsDashboard from '@/components/dashboards/LogisticsDashboard';
@@ -12,6 +13,7 @@ import RegulatorDashboard from '@/components/dashboards/RegulatorDashboard';
 export default function Home() {
   const [currentRole, setCurrentRole] = useState<UserRole>('supplier');
   const [orders, setOrders] = useState<Order[]>([]);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   const handleCreateOrder = (order: Omit<Order, 'id' | 'createdAt' | 'status'>) => {
     const newOrder: Order = {
@@ -95,15 +97,43 @@ export default function Home() {
               <h1 className="text-2xl font-bold text-gray-900">ChainVault</h1>
               <p className="text-sm text-gray-500">Privacy-Preserving Supply Chain</p>
             </div>
-            <RoleSwitcher currentRole={currentRole} onRoleChange={setCurrentRole} />
+            <div className="flex items-center space-x-4">
+              <RoleSwitcher currentRole={currentRole} onRoleChange={setCurrentRole} />
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Dashboard Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {renderDashboard()}
-      </main>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar with Wallet */}
+          <div className="lg:col-span-1">
+            <WalletConnect onWalletChange={setWalletAddress} />
+            
+            {walletAddress && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-800">
+                  ✓ Wallet connected! You can now interact with on-chain contracts.
+                </p>
+              </div>
+            )}
+
+            {!walletAddress && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  ⚠ Demo mode: Connect wallet for on-chain interactions
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Dashboard Content */}
+          <div className="lg:col-span-3">
+            {renderDashboard()}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

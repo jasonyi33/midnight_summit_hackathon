@@ -10,6 +10,9 @@
  * - Blockchain integration with graceful degradation (Phase 3)
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
