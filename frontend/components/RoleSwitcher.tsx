@@ -20,7 +20,7 @@ export default function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcher
   const roles: UserRole[] = ['supplier', 'buyer', 'logistics', 'regulator'];
 
   return (
-    <div className="flex gap-2 p-2 bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="flex gap-2 p-1.5 bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm border border-blue-100">
       {roles.map((role) => {
         const Icon = ROLE_ICONS[role];
         const isActive = currentRole === role;
@@ -31,14 +31,14 @@ export default function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcher
             key={role}
             onClick={() => onRoleChange(role)}
             className={`
-              flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all
+              flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200
               ${isActive
-                ? `${colors.bg} ${colors.text} shadow-sm`
-                : 'text-gray-600 hover:bg-gray-50'
+                ? `${colors.bg} ${colors.text} shadow-md scale-105 border-2 ${colors.border}`
+                : 'text-gray-600 hover:bg-white hover:shadow-sm border-2 border-transparent'
               }
             `}
           >
-            <Icon size={18} />
+            <Icon size={18} className={isActive ? '' : 'opacity-60'} />
             <span>{ROLE_LABELS[role]}</span>
           </button>
         );

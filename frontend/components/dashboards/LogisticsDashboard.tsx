@@ -55,16 +55,21 @@ export default function LogisticsDashboard({ user, orders, onDelivery }: Logisti
       </div>
 
       {/* Map View */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <MapPin size={24} className="text-amber-600" />
+      <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+          <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-2 rounded-lg">
+            <MapPin size={24} className="text-white" />
+          </div>
           GPS Delivery Tracker
         </h2>
 
         {activeOrders.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            <Truck size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>No active deliveries</p>
+          <div className="text-center py-16">
+            <div className="bg-blue-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+              <Truck size={40} className="text-blue-600" />
+            </div>
+            <p className="text-gray-600 text-lg font-medium">No active deliveries</p>
+            <p className="text-gray-500 text-sm mt-1">Deliveries will appear here when orders are approved</p>
           </div>
         ) : (
           <DeliveryMap
@@ -77,41 +82,41 @@ export default function LogisticsDashboard({ user, orders, onDelivery }: Logisti
 
       {/* Active Deliveries */}
       {activeOrders.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Active Deliveries</h2>
+        <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Active Deliveries</h2>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {activeOrders.map((order) => (
               <div
                 key={order.id}
-                className={`border rounded-lg p-4 transition-all cursor-pointer ${
+                className={`border-2 rounded-xl p-6 transition-all cursor-pointer ${
                   selectedOrder?.id === order.id
-                    ? 'border-amber-500 bg-amber-50'
-                    : 'border-gray-200 hover:border-amber-300'
+                    ? 'border-amber-400 bg-gradient-to-br from-amber-50 to-white shadow-md'
+                    : 'border-blue-100 hover:border-amber-200 hover:shadow-md bg-white'
                 }`}
                 onClick={() => setSelectedOrder(order)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-mono text-sm text-gray-500">{order.id}</span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="font-mono text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-md">{order.id}</span>
+                      <span className={`px-3 py-1 rounded-lg text-xs font-semibold border ${
                         order.status === 'approved'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-purple-100 text-purple-800'
+                          ? 'bg-blue-100 text-blue-700 border-blue-200'
+                          : 'bg-purple-100 text-purple-700 border-purple-200'
                       }`}>
                         {order.status.replace(/_/g, ' ').toUpperCase()}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                    <div className="grid grid-cols-2 gap-6 text-sm mb-5">
                       <div>
-                        <span className="text-gray-600">Quantity:</span>
-                        <span className="ml-2 font-medium">{order.quantity} units</span>
+                        <span className="text-gray-500 font-medium">Quantity:</span>
+                        <span className="ml-2 font-bold text-gray-900">{order.quantity} units</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Destination:</span>
-                        <span className="ml-2 font-mono text-xs">
+                        <span className="text-gray-500 font-medium">Destination:</span>
+                        <span className="ml-2 font-mono text-xs font-medium text-gray-900">
                           {order.deliveryLocation.lat.toFixed(4)}, {order.deliveryLocation.lng.toFixed(4)}
                         </span>
                       </div>
@@ -122,9 +127,9 @@ export default function LogisticsDashboard({ user, orders, onDelivery }: Logisti
                         e.stopPropagation();
                         handleSimulateDelivery(order);
                       }}
-                      className="w-full bg-amber-600 text-white py-2 px-4 rounded-md font-medium hover:bg-amber-700 transition-colors"
+                      className="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white py-4 px-4 rounded-lg font-semibold hover:from-amber-700 hover:to-amber-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
                     >
-                      <MapPin size={16} className="inline mr-2" />
+                      <MapPin size={18} />
                       Confirm Delivery (Simulate GPS Arrival)
                     </button>
                   </div>
@@ -136,40 +141,46 @@ export default function LogisticsDashboard({ user, orders, onDelivery }: Logisti
       )}
 
       {/* Delivery History */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Delivery History</h2>
+      <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Delivery History</h2>
 
         {deliveredOrders.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No completed deliveries yet.</p>
+          <div className="text-center py-12">
+            <div className="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <Package className="text-blue-600" size={32} />
+            </div>
+            <p className="text-gray-600 text-lg">No completed deliveries yet</p>
+            <p className="text-gray-500 text-sm mt-1">Completed deliveries will appear here</p>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {deliveredOrders.map((order) => (
-              <div key={order.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="font-mono text-sm text-gray-500">{order.id}</span>
-                  <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+              <div key={order.id} className="border border-blue-100 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all bg-white">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="font-mono text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-md">{order.id}</span>
+                  <span className="px-3 py-1 rounded-lg text-xs font-semibold border bg-green-100 text-green-700 border-green-200">
                     DELIVERED
                   </span>
                   {order.status === 'payment_released' && (
-                    <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <span className="px-3 py-1 rounded-lg text-xs font-semibold border bg-emerald-100 text-emerald-700 border-emerald-200">
                       PAID
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-3 gap-6 text-sm">
                   <div>
-                    <span className="text-gray-600">Quantity:</span>
-                    <span className="ml-2 font-medium">{order.quantity} units</span>
+                    <span className="text-gray-500 font-medium">Quantity:</span>
+                    <span className="ml-2 font-bold text-gray-900">{order.quantity} units</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Delivered:</span>
-                    <span className="ml-2 font-medium">
+                    <span className="text-gray-500 font-medium">Delivered:</span>
+                    <span className="ml-2 font-bold text-gray-900">
                       {order.deliveredAt ? new Date(order.deliveredAt).toLocaleDateString() : 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Location:</span>
-                    <span className="ml-2 font-mono text-xs">
+                    <span className="text-gray-500 font-medium">Location:</span>
+                    <span className="ml-2 font-mono text-xs font-medium text-gray-900">
                       {order.deliveryLocation.lat.toFixed(4)}, {order.deliveryLocation.lng.toFixed(4)}
                     </span>
                   </div>
@@ -190,14 +201,14 @@ function StatCard({ icon, label, value, bgColor }: {
   bgColor: string;
 }) {
   return (
-    <div className={`${bgColor} rounded-lg p-4 border border-gray-100`}>
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-white rounded-md">
+    <div className="bg-white rounded-xl p-6 border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+      <div className="flex items-center gap-4">
+        <div className={`${bgColor} p-3 rounded-lg`}>
           {icon}
         </div>
         <div>
-          <p className="text-sm text-gray-600">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
         </div>
       </div>
     </div>
