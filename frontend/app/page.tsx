@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserRole, Order } from '@/lib/types';
+import { UserRole, Order, SupplyChainCondition, ConditionPhase } from '@/lib/types';
 import { DEMO_USERS } from '@/lib/constants';
 import RoleSwitcher from '@/components/RoleSwitcher';
 import WalletConnect from '@/components/WalletConnect';
@@ -53,7 +53,23 @@ export default function Home() {
         approvedAt: new Date(Date.now() - 1800000), // 30 min ago
         deliveryLocation: { lat: 37.7749, lng: -122.4194 }, // San Francisco
         currentLocation: { lat: 37.6749, lng: -122.5194 },
-        zkProof: 'zk_proof_demo_abc123'
+        zkProof: 'zk_proof_demo_abc123',
+        conditions: [
+          {
+            id: 'condition-1',
+            role: 'supplier',
+            phase: 'planning',
+            description: 'MegaRetail may request cold-chain validation on arrival',
+            createdAt: new Date(Date.now() - 3500000)
+          },
+          {
+            id: 'condition-2',
+            role: 'buyer',
+            phase: 'approval',
+            description: 'Payment release gated on third-party lab certificate',
+            createdAt: new Date(Date.now() - 2000000)
+          }
+        ]
       },
       {
         id: 'demo-order-2',
@@ -66,7 +82,16 @@ export default function Home() {
         approvedAt: new Date(Date.now() - 5400000), // 1.5 hours ago
         deliveryLocation: { lat: 34.0522, lng: -118.2437 }, // Los Angeles
         currentLocation: { lat: 34.2522, lng: -118.4437 },
-        zkProof: 'zk_proof_demo_def456'
+        zkProof: 'zk_proof_demo_def456',
+        conditions: [
+          {
+            id: 'condition-3',
+            role: 'logistics',
+            phase: 'logistics',
+            description: 'Driver must capture custody attestation at the Nevada checkpoint',
+            createdAt: new Date(Date.now() - 4000000)
+          }
+        ]
       }
     ];
     setOrders(sampleOrders);
@@ -92,6 +117,29 @@ export default function Home() {
       createdAt: new Date()
     };
     setOrders([...orders, newOrder]);
+  };
+
+  const handleAddCondition = (orderId: string, condition: { description: string; role: UserRole; phase: ConditionPhase }) => {
+    if (!condition.description.trim()) return;
+    setOrders(prev =>
+      prev.map(order =>
+        order.id === orderId
+          ? {
+              ...order,
+              conditions: [
+                ...(order.conditions || []),
+                {
+                  id: `condition-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                  role: condition.role,
+                  phase: condition.phase,
+                  description: condition.description.trim(),
+                  createdAt: new Date()
+                }
+              ]
+            }
+          : order
+      )
+    );
   };
 
   const handleApproveOrder = (orderId: string, zkProof: string) => {
@@ -128,6 +176,7 @@ export default function Home() {
             user={user}
             orders={orders}
             onCreateOrder={handleCreateOrder}
+            onAddCondition={handleAddCondition}
           />
         );
       case 'buyer':
@@ -136,6 +185,7 @@ export default function Home() {
             user={user}
             orders={orders}
             onApproveOrder={handleApproveOrder}
+            onAddCondition={handleAddCondition}
           />
         );
       case 'logistics':
@@ -144,6 +194,7 @@ export default function Home() {
             user={user}
             orders={orders}
             onDelivery={handleDelivery}
+            onAddCondition={handleAddCondition}
           />
         );
       case 'regulator':
@@ -151,6 +202,7 @@ export default function Home() {
           <RegulatorDashboard
             user={user}
             orders={orders}
+            onAddCondition={handleAddCondition}
           />
         );
     }

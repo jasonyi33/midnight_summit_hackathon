@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Order } from '@/lib/types';
 import { MapPin, Navigation, TrendingUp, Clock, Zap } from 'lucide-react';
 
@@ -20,6 +20,22 @@ interface DeliveryProgress {
 
 export default function DeliveryMap({ orders, selectedOrder, onSelectOrder }: DeliveryMapProps) {
   const [deliveryProgress, setDeliveryProgress] = useState<Map<string, DeliveryProgress>>(new Map());
+  const [globeRotation, setGlobeRotation] = useState(0);
+  const [lights, setLights] = useState<Array<{ lat: number; lng: number }>>([]);
+
+  useEffect(() => {
+    // seed some city lights
+    const cities = [
+      { lat: 37.7749, lng: -122.4194 },
+      { lat: 34.0522, lng: -118.2437 },
+      { lat: 40.7128, lng: -74.006 },
+      { lat: 51.5074, lng: -0.1278 },
+      { lat: 35.6762, lng: 139.6503 },
+      { lat: 1.3521, lng: 103.8198 },
+      { lat: -33.8688, lng: 151.2093 }
+    ];
+    setLights(cities);
+  }, []);
 
   useEffect(() => {
     // Simulate GPS tracking with realistic movement
@@ -66,28 +82,66 @@ export default function DeliveryMap({ orders, selectedOrder, onSelectOrder }: De
     return () => clearInterval(interval);
   }, [orders]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGlobeRotation((prev) => (prev + 0.1) % 360);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* Enhanced Map Visualization */}
-      <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 rounded-xl p-8 relative h-[500px] overflow-hidden shadow-2xl border border-slate-600">
-        {/* Animated Background with "Map" Effect */}
+      <div className="bg-slate-900 rounded-xl p-8 relative h-[500px] overflow-hidden shadow-2xl border border-slate-800">
+        {/* Rotating globe */}
+        <div className="absolute inset-0" style={{ perspective: '2000px' }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              transformStyle: 'preserve-3d',
+              transform: `rotateX(20deg) rotate(${globeRotation}deg)`,
+              transition: 'transform 0.05s linear'
+            }}
+          >
+            <div
+              className="absolute inset-0 rounded-full"
+              style={{
+                backgroundImage: "url('/globe.svg')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                boxShadow: '0 0 60px rgba(14,165,233,0.2)'
+              }}
+            />
+          </div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-900/80" />
+
+        {/* city lights */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-blue-900/20 to-purple-900/20" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
+          {lights.map((light, idx) => {
+            const projectLat = (lat: number) => 100 - ((lat + 90) / 180) * 100;
+            const projectLng = (lng: number) => ((lng + 180) / 360) * 100;
+            const lat = projectLat(light.lat);
+            const lng = projectLng(light.lng);
+            return (
+              <div
+                key={idx}
+                className="absolute w-1.5 h-1.5 rounded-full bg-amber-300 opacity-70 animate-pulse"
+                style={{
+                  left: `${lng}%`,
+                  top: `${lat}%`,
+                  animationDuration: `${2 + Math.random()}s`
+                }}
+              />
+            );
+          })}
         </div>
 
-        {/* Sophisticated Grid */}
+        {/* meridian lines */}
         <div className="absolute inset-0">
-          {/* Major grid lines */}
-          <div className="absolute inset-0 grid grid-cols-10 grid-rows-10">
-            {Array.from({ length: 100 }).map((_, i) => (
-              <div key={i} className="border border-slate-600/30" />
-            ))}
-          </div>
-          {/* Minor grid lines */}
-          <div className="absolute inset-0 grid grid-cols-20 grid-rows-20 opacity-50">
-            {Array.from({ length: 400 }).map((_, i) => (
-              <div key={i} className="border border-slate-600/10" />
+          <div className="absolute inset-0 grid grid-cols-16 grid-rows-8">
+            {Array.from({ length: 128 }).map((_, i) => (
+              <div key={i} className="border border-white/5" />
             ))}
           </div>
         </div>
@@ -103,11 +157,14 @@ export default function DeliveryMap({ orders, selectedOrder, onSelectOrder }: De
               eta: 30
             };
 
-            // Normalize coordinates to fit in the container (0-100%)
-            const normalizedLat = ((progress.lat - 37.5) / 0.5) * 100;
-            const normalizedLng = ((progress.lng + 123) / 0.5) * 100;
-            const destLat = ((order.deliveryLocation.lat - 37.5) / 0.5) * 100;
-            const destLng = ((order.deliveryLocation.lng + 123) / 0.5) * 100;
+            // Project coordinates to equirectangular map (0-100%)
+            const projectLat = (lat: number) => 100 - ((lat + 90) / 180) * 100;
+            const projectLng = (lng: number) => ((lng + 180) / 360) * 100;
+
+            const normalizedLat = projectLat(progress.lat);
+            const normalizedLng = projectLng(progress.lng);
+            const destLat = projectLat(order.deliveryLocation.lat);
+            const destLng = projectLng(order.deliveryLocation.lng);
 
             const isSelected = selectedOrder?.id === order.id;
 

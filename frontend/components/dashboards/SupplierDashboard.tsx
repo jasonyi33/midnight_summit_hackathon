@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { User, Order } from '@/lib/types';
+import { User, Order, SupplyChainCondition } from '@/lib/types';
 import { Package, DollarSign, Clock, CheckCircle } from 'lucide-react';
 import PrivacyBadge from '@/components/PrivacyBadge';
+import ConditionComposer from '@/components/ConditionComposer';
 
 interface SupplierDashboardProps {
   user: User;
   orders: Order[];
   onCreateOrder: (order: Omit<Order, 'id' | 'createdAt' | 'status'>) => void;
+  onAddCondition: (orderId: string, payload: { description: string; role: User['role']; phase: 'planning' }) => void;
 }
 
-export default function SupplierDashboard({ user, orders, onCreateOrder }: SupplierDashboardProps) {
+export default function SupplierDashboard({ user, orders, onCreateOrder, onAddCondition }: SupplierDashboardProps) {
   const [quantity, setQuantity] = useState('');
   const [price, setPrice] = useState('');
   const [deliveryLat, setDeliveryLat] = useState('');
@@ -178,7 +180,12 @@ export default function SupplierDashboard({ user, orders, onCreateOrder }: Suppl
         ) : (
           <div className="space-y-4">
             {supplierOrders.map((order) => (
-              <OrderCard key={order.id} order={order} showPrice={true} />
+              <OrderCard
+                key={order.id}
+                order={order}
+                showPrice={true}
+                onAddCondition={onAddCondition}
+              />
             ))}
           </div>
         )}
@@ -208,7 +215,15 @@ function StatCard({ icon, label, value, accent }: {
   );
 }
 
-function OrderCard({ order, showPrice }: { order: Order; showPrice: boolean }) {
+function OrderCard({
+  order,
+  showPrice,
+  onAddCondition
+}: {
+  order: Order;
+  showPrice: boolean;
+  onAddCondition: SupplierDashboardProps['onAddCondition'];
+}) {
   const statusColors = {
     pending_approval: 'bg-amber-50 text-amber-700 border-amber-200',
     approved: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -246,6 +261,36 @@ function OrderCard({ order, showPrice }: { order: Order; showPrice: boolean }) {
           </dd>
         </div>
       </dl>
+      <div className="mt-4 space-y-2">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Optional Conditions</p>
+        {order.conditions && order.conditions.length > 0 ? (
+          <ul className="space-y-1">
+            {order.conditions.map((condition) => (
+              <li
+                key={condition.id}
+                className="text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg flex items-start justify-between gap-2"
+              >
+                <div>
+                  <span className="font-semibold text-slate-800 capitalize">{condition.phase}</span>
+                  <span className="mx-1 text-slate-400">•</span>
+                  <span>{condition.description}</span>
+                </div>
+                <span className="text-[10px] uppercase text-slate-400">{condition.role}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-slate-400">No optional conditions logged yet.</p>
+        )}
+        <ConditionComposer
+          orderId={order.id}
+          role="supplier"
+          phase="planning"
+          onAddCondition={onAddCondition}
+          placeholder="Add planning note or optional condition (e.g., staggered pickup windows)"
+          buttonLabel="Add planning condition"
+        />
+      </div>
     </div>
   );
 }

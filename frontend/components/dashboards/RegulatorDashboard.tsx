@@ -4,13 +4,15 @@ import type { ReactNode } from 'react';
 import { User, Order, ComplianceRecord } from '@/lib/types';
 import { Shield, FileCheck, AlertCircle, CheckCircle } from 'lucide-react';
 import PrivacyBadge from '@/components/PrivacyBadge';
+import ConditionComposer from '@/components/ConditionComposer';
 
 interface RegulatorDashboardProps {
   user: User;
   orders: Order[];
+  onAddCondition: (orderId: string, payload: { description: string; role: User['role']; phase: 'compliance' }) => void;
 }
 
-export default function RegulatorDashboard({ user, orders }: RegulatorDashboardProps) {
+export default function RegulatorDashboard({ user, orders, onAddCondition }: RegulatorDashboardProps) {
   // Generate compliance records from orders
   const complianceRecords: ComplianceRecord[] = orders.flatMap(order => {
     const records: ComplianceRecord[] = [];
@@ -177,7 +179,7 @@ export default function RegulatorDashboard({ user, orders }: RegulatorDashboardP
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <OrderAuditCard key={order.id} order={order} />
+              <OrderAuditCard key={order.id} order={order} onAddCondition={onAddCondition} />
             ))}
           </div>
         )}
@@ -234,7 +236,13 @@ function StatCard({ icon, label, value, accent }: {
   );
 }
 
-function OrderAuditCard({ order }: { order: Order }) {
+function OrderAuditCard({
+  order,
+  onAddCondition
+}: {
+  order: Order;
+  onAddCondition: RegulatorDashboardProps['onAddCondition'];
+}) {
   const statusColors = {
     pending_approval: 'bg-amber-50 text-amber-700 border-amber-200',
     approved: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -289,6 +297,34 @@ function OrderAuditCard({ order }: { order: Order }) {
           </p>
         </div>
       )}
+
+      <div className="mt-5 space-y-2 border-t border-dashed border-slate-200 pt-4">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Optional Conditions</p>
+        {order.conditions && order.conditions.length > 0 ? (
+          <ul className="space-y-1">
+            {order.conditions.map((condition) => (
+              <li key={condition.id} className="text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg flex items-start justify-between gap-2">
+                <div>
+                  <span className="font-semibold text-slate-800 capitalize">{condition.phase}</span>
+                  <span className="mx-1 text-slate-400">•</span>
+                  <span>{condition.description}</span>
+                </div>
+                <span className="text-[10px] uppercase text-slate-400">{condition.role}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-slate-400">No optional conditions logged yet.</p>
+        )}
+        <ConditionComposer
+          orderId={order.id}
+          role="regulator"
+          phase="compliance"
+          onAddCondition={onAddCondition}
+          placeholder="Add compliance condition (e.g., audit sampling, customs hold release)"
+          buttonLabel="Add compliance note"
+        />
+      </div>
     </div>
   );
 }

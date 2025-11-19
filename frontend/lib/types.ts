@@ -8,6 +8,17 @@ export interface User {
   name: string;
 }
 
+export type ConditionPhase = 'planning' | 'approval' | 'logistics' | 'compliance';
+
+export interface SupplyChainCondition {
+  id: string;
+  role: UserRole;
+  phase: ConditionPhase;
+  description: string;
+  createdAt: Date;
+  acknowledged?: boolean;
+}
+
 export interface Order {
   id: string;
   supplierId: string;
@@ -27,6 +38,7 @@ export interface Order {
     lng: number;
   };
   zkProof?: string;
+  conditions?: SupplyChainCondition[];
 }
 
 export type OrderStatus =

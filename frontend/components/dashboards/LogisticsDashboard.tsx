@@ -4,14 +4,16 @@ import { useState } from 'react';
 import { User, Order } from '@/lib/types';
 import { Truck, MapPin, Navigation, Package } from 'lucide-react';
 import DeliveryMap from '@/components/DeliveryMap';
+import ConditionComposer from '@/components/ConditionComposer';
 
 interface LogisticsDashboardProps {
   user: User;
   orders: Order[];
   onDelivery: (orderId: string, location: { lat: number; lng: number }) => void;
+  onAddCondition: (orderId: string, payload: { description: string; role: User['role']; phase: 'logistics' }) => void;
 }
 
-export default function LogisticsDashboard({ user, orders, onDelivery }: LogisticsDashboardProps) {
+export default function LogisticsDashboard({ user, orders, onDelivery, onAddCondition }: LogisticsDashboardProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const activeOrders = orders.filter(
@@ -136,6 +138,35 @@ export default function LogisticsDashboard({ user, orders, onDelivery }: Logisti
                       <MapPin size={18} />
                       Confirm Delivery (Simulate GPS Arrival)
                     </button>
+
+                    <div className="mt-4 space-y-2">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Optional Conditions</p>
+                      {order.conditions && order.conditions.length > 0 ? (
+                        <ul className="space-y-1">
+                          {order.conditions.map((condition) => (
+                            <li key={condition.id} className="text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg flex items-start justify-between gap-2">
+                              <div>
+                                <span className="font-semibold text-slate-800 capitalize">{condition.phase}</span>
+                                <span className="mx-1 text-slate-400">•</span>
+                                <span>{condition.description}</span>
+                              </div>
+                              <span className="text-[10px] uppercase text-slate-400">{condition.role}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-xs text-slate-400">No optional conditions logged yet.</p>
+                      )}
+
+                      <ConditionComposer
+                        orderId={order.id}
+                        role="logistics"
+                        phase="logistics"
+                        onAddCondition={onAddCondition}
+                        placeholder="Add logistics condition (e.g., chain-of-custody photo, temperature check)"
+                        buttonLabel="Add logistics condition"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -189,6 +220,33 @@ export default function LogisticsDashboard({ user, orders, onDelivery }: Logisti
                       {order.deliveryLocation.lat.toFixed(4)}, {order.deliveryLocation.lng.toFixed(4)}
                     </span>
                   </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Optional Conditions</p>
+                  {order.conditions && order.conditions.length > 0 ? (
+                    <ul className="space-y-1">
+                      {order.conditions.map((condition) => (
+                        <li key={condition.id} className="text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg flex items-start justify-between gap-2">
+                          <div>
+                            <span className="font-semibold text-slate-800 capitalize">{condition.phase}</span>
+                            <span className="mx-1 text-slate-400">•</span>
+                            <span>{condition.description}</span>
+                          </div>
+                          <span className="text-[10px] uppercase text-slate-400">{condition.role}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-slate-400">No optional conditions logged yet.</p>
+                  )}
+                  <ConditionComposer
+                    orderId={order.id}
+                    role="logistics"
+                    phase="logistics"
+                    onAddCondition={onAddCondition}
+                    placeholder="Note a retrospective logistics condition (e.g., route deviation explanation)"
+                    buttonLabel="Add note"
+                  />
                 </div>
               </div>
             ))}

@@ -5,14 +5,16 @@ import { User, Order } from '@/lib/types';
 import { ShoppingCart, Eye, CheckCircle } from 'lucide-react';
 import PrivacyBadge from '@/components/PrivacyBadge';
 import ZKProofGenerator from '@/components/ZKProofGenerator';
+import ConditionComposer from '@/components/ConditionComposer';
 
 interface BuyerDashboardProps {
   user: User;
   orders: Order[];
   onApproveOrder: (orderId: string, zkProof: string) => void;
+  onAddCondition: (orderId: string, payload: { description: string; role: User['role']; phase: 'approval' }) => void;
 }
 
-export default function BuyerDashboard({ user, orders, onApproveOrder }: BuyerDashboardProps) {
+export default function BuyerDashboard({ user, orders, onApproveOrder, onAddCondition }: BuyerDashboardProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [generatingProof, setGeneratingProof] = useState(false);
 
@@ -102,6 +104,34 @@ export default function BuyerDashboard({ user, orders, onApproveOrder }: BuyerDa
                   </div>
                 </div>
 
+                <div className="space-y-2 mt-4">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Optional Conditions</p>
+                  {order.conditions && order.conditions.length > 0 ? (
+                    <ul className="space-y-1">
+                      {order.conditions.map((condition) => (
+                        <li key={condition.id} className="text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg flex items-start justify-between gap-2">
+                          <div>
+                            <span className="font-semibold text-slate-800 capitalize">{condition.phase}</span>
+                            <span className="mx-1 text-slate-400">•</span>
+                            <span>{condition.description}</span>
+                          </div>
+                          <span className="text-[10px] uppercase text-slate-400">{condition.role}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-slate-400">No optional conditions logged yet.</p>
+                  )}
+                  <ConditionComposer
+                    orderId={order.id}
+                    role="buyer"
+                    phase="approval"
+                    onAddCondition={onAddCondition}
+                    placeholder="Add optional approval condition (e.g., sustainability audit, packaging photo)"
+                    buttonLabel="Add approval condition"
+                  />
+                </div>
+
                 <button
                   onClick={() => handleApprove(order)}
                   disabled={generatingProof && selectedOrder?.id === order.id}
@@ -146,7 +176,7 @@ export default function BuyerDashboard({ user, orders, onApproveOrder }: BuyerDa
         ) : (
           <div className="space-y-4">
             {buyerOrders.map((order) => (
-              <BuyerOrderCard key={order.id} order={order} />
+              <BuyerOrderCard key={order.id} order={order} onAddCondition={onAddCondition} />
             ))}
           </div>
         )}
@@ -176,7 +206,13 @@ function StatCard({ icon, label, value, accent }: {
   );
 }
 
-function BuyerOrderCard({ order }: { order: Order }) {
+function BuyerOrderCard({
+  order,
+  onAddCondition
+}: {
+  order: Order;
+  onAddCondition?: BuyerDashboardProps['onAddCondition'];
+}) {
   const statusColors = {
     pending_approval: 'bg-amber-50 text-amber-700 border-amber-200',
     approved: 'bg-blue-50 text-blue-700 border-blue-200',
@@ -218,6 +254,37 @@ function BuyerOrderCard({ order }: { order: Order }) {
             {order.status.replace(/_/g, ' ')}
           </span>
         </div>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Optional Conditions</p>
+        {order.conditions && order.conditions.length > 0 ? (
+          <ul className="space-y-1">
+            {order.conditions.map((condition) => (
+              <li key={condition.id} className="text-xs text-slate-600 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg flex items-start justify-between gap-2">
+                <div>
+                  <span className="font-semibold text-slate-800 capitalize">{condition.phase}</span>
+                  <span className="mx-1 text-slate-400">•</span>
+                  <span>{condition.description}</span>
+                </div>
+                <span className="text-[10px] uppercase text-slate-400">{condition.role}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-slate-400">No optional conditions logged yet.</p>
+        )}
+
+        {onAddCondition && (
+          <ConditionComposer
+            orderId={order.id}
+            role="buyer"
+            phase="approval"
+            onAddCondition={onAddCondition}
+            placeholder="Record an optional condition for this order (e.g., final QC photo)"
+            buttonLabel="Add buyer condition"
+          />
+        )}
       </div>
     </div>
   );
