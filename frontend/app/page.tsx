@@ -14,6 +14,7 @@ export default function Home() {
   const [currentRole, setCurrentRole] = useState<UserRole>('supplier');
   const [orders, setOrders] = useState<Order[]>([]);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number>(2000);
   const [networkLatency, setNetworkLatency] = useState(42);
 
   const ROLE_CONTEXT = {
@@ -166,6 +167,10 @@ export default function Home() {
     ));
   };
 
+  const handleProofSpend = (amount: number) => {
+    setWalletBalance(prev => Math.max(0, prev - amount));
+  };
+
   const renderDashboard = () => {
     const user = DEMO_USERS[currentRole];
 
@@ -186,6 +191,7 @@ export default function Home() {
             orders={orders}
             onApproveOrder={handleApproveOrder}
             onAddCondition={handleAddCondition}
+            onSpendBalance={handleProofSpend}
           />
         );
       case 'logistics':
@@ -292,7 +298,11 @@ export default function Home() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="space-y-4">
-            <WalletConnect onWalletChange={setWalletAddress} />
+            <WalletConnect
+              onWalletChange={setWalletAddress}
+              demoBalance={walletBalance}
+              onBalanceChange={setWalletBalance}
+            />
 
             <div className="card p-5">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Session Notes</p>

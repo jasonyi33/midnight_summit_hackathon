@@ -9,6 +9,10 @@ interface ZKProofGeneratorProps {
 }
 
 export default function ZKProofGenerator({ order }: ZKProofGeneratorProps) {
+  const proofFee = useMemo(
+    () => Math.max(5, Math.min(50, Math.round(order.price * 0.0001))),
+    [order.price]
+  );
   const proofSteps = useMemo(
     () => [
       {
@@ -90,6 +94,10 @@ export default function ZKProofGenerator({ order }: ZKProofGeneratorProps) {
             <div>Quantity: {order.quantity} units</div>
             <div>
               Price: <span className="text-red-600 tracking-widest">ENCRYPTED</span>
+            </div>
+            <div className="text-xs text-slate-500 mt-2">
+              Relay fee debited:{' '}
+              <span className="font-semibold text-slate-900">{proofFee.toLocaleString()} tDUST</span>
             </div>
           </div>
         </div>

@@ -12,9 +12,10 @@ interface BuyerDashboardProps {
   orders: Order[];
   onApproveOrder: (orderId: string, zkProof: string) => void;
   onAddCondition: (orderId: string, payload: { description: string; role: User['role']; phase: 'approval' }) => void;
+  onSpendBalance?: (amount: number) => void;
 }
 
-export default function BuyerDashboard({ user, orders, onApproveOrder, onAddCondition }: BuyerDashboardProps) {
+export default function BuyerDashboard({ user, orders, onApproveOrder, onAddCondition, onSpendBalance }: BuyerDashboardProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [generatingProof, setGeneratingProof] = useState(false);
 
@@ -30,6 +31,8 @@ export default function BuyerDashboard({ user, orders, onApproveOrder, onAddCond
 
     const zkProof = `zk_proof_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     onApproveOrder(order.id, zkProof);
+    const fee = Math.max(5, Math.min(50, Math.round(order.price * 0.0001)));
+    onSpendBalance?.(fee);
 
     setGeneratingProof(false);
     setSelectedOrder(null);

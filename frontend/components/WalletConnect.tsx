@@ -4,18 +4,20 @@ import { useState, useEffect } from 'react';
 
 interface WalletConnectProps {
   onWalletChange?: (address: string | null) => void;
+  demoBalance?: number;
+  onBalanceChange?: (balance: number) => void;
 }
 
 // Demo mode configuration
 const DEMO_MODE = true;
 const DEMO_ADDRESS = 'mn_shield-addr_test1qqxyz789abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567';
-const DEMO_BALANCE = '2000'; // 50 million tDUST
+const DEMO_BALANCE = 2000; // 50 million tDUST
 
-export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
+export default function WalletConnect({ onWalletChange, demoBalance, onBalanceChange }: WalletConnectProps) {
   const [isConnected, setIsConnected] = useState(DEMO_MODE);
   const [walletAddress, setWalletAddress] = useState<string | null>(DEMO_MODE ? DEMO_ADDRESS : null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [balance, setBalance] = useState<string>(DEMO_MODE ? DEMO_BALANCE : '0');
+  const [balance, setBalance] = useState<number>(DEMO_MODE ? DEMO_BALANCE : 0);
   const [error, setError] = useState<string | null>(null);
 
   // Auto-connect in demo mode
@@ -25,6 +27,12 @@ export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
     }
   }, [onWalletChange]);
 
+  useEffect(() => {
+    if (typeof demoBalance === 'number') {
+      setBalance(demoBalance);
+    }
+  }, [demoBalance]);
+
   const handleConnect = async () => {
     // In demo mode, just simulate connection
     if (DEMO_MODE) {
@@ -33,6 +41,7 @@ export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
         setIsConnected(true);
         setWalletAddress(DEMO_ADDRESS);
         setBalance(DEMO_BALANCE);
+        onBalanceChange?.(DEMO_BALANCE);
         if (onWalletChange) {
           onWalletChange(DEMO_ADDRESS);
         }
@@ -47,7 +56,8 @@ export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
     
     setWalletAddress(null);
     setIsConnected(false);
-    setBalance('0');
+    setBalance(0);
+    onBalanceChange?.(0);
     setError(null);
     if (onWalletChange) {
       onWalletChange(null);
@@ -59,11 +69,7 @@ export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
     return `${address.substring(0, 10)}...${address.substring(address.length - 8)}`;
   };
 
-  const formatBalance = (balance: string) => {
-    // If balance is very large, format with separators for readability
-    const num = BigInt(balance);
-    return num.toLocaleString();
-  };
+  const formatBalance = (value: number) => value.toLocaleString();
 
   return (
     <div className="card p-5 space-y-4">
