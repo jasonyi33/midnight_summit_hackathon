@@ -14,6 +14,30 @@ export default function Home() {
   const [currentRole, setCurrentRole] = useState<UserRole>('supplier');
   const [orders, setOrders] = useState<Order[]>([]);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [networkLatency, setNetworkLatency] = useState(42);
+
+  const ROLE_CONTEXT = {
+    supplier: {
+      label: 'Supplier Workspace',
+      description: 'Plan production, submit orders, and share encrypted commercial terms.',
+      focus: 'Operational Readiness'
+    },
+    buyer: {
+      label: 'Buyer Assurance',
+      description: 'Approve volumes, inspect proofs, and release payment milestones.',
+      focus: 'Procurement Controls'
+    },
+    logistics: {
+      label: 'Logistics Command',
+      description: 'Track live GPS beacons, confirm custody transfers, and verify arrivals.',
+      focus: 'Live Execution'
+    },
+    regulator: {
+      label: 'Regulator Oversight',
+      description: 'Audit trails, proof hashes, and exception workflows stay policy-ready.',
+      focus: 'Audit Confidence'
+    }
+  } satisfies Record<UserRole, { label: string; description: string; focus: string }>;
 
   // Auto-create sample orders for GPS demo on mount
   useEffect(() => {
@@ -46,6 +70,18 @@ export default function Home() {
       }
     ];
     setOrders(sampleOrders);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNetworkLatency(prev => {
+        const delta = Math.random() * 10 - 5;
+        const next = Math.max(32, Math.min(68, prev + delta));
+        return Math.round(next);
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleCreateOrder = (order: Omit<Order, 'id' | 'createdAt' | 'status'>) => {
@@ -121,88 +157,107 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-white via-blue-50/50 to-white border-b-2 border-gradient-to-r from-blue-200 via-indigo-300 to-purple-200 shadow-lg sticky top-0 z-50 backdrop-blur-md bg-white/90">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl blur-md opacity-70 group-hover:opacity-100 transition-all duration-300"></div>
-                <div className="relative bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-600 p-3 rounded-xl shadow-xl transform group-hover:scale-110 transition-all duration-300">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <h1 className="text-3xl font-black bg-gradient-to-r from-blue-600 via-indigo-700 to-purple-700 bg-clip-text text-transparent tracking-tight group-hover:from-blue-700 group-hover:via-indigo-800 group-hover:to-purple-800 transition-all duration-300">
-                  ChainVault
-                </h1>
-                <p className="text-sm font-semibold bg-gradient-to-r from-gray-600 to-gray-800 bg-clip-text text-transparent">
-                  Privacy-Preserving Supply Chain
-                </p>
-              </div>
+    <div className="app-shell">
+      <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center text-white font-semibold tracking-tight">
+              CV
             </div>
-            <div className="flex items-center space-x-4">
-              <RoleSwitcher currentRole={currentRole} onRoleChange={setCurrentRole} />
+            <div>
+              <p className="text-xs uppercase font-semibold text-slate-500 tracking-[0.2em]">ChainVault</p>
+              <h1 className="text-2xl font-semibold text-slate-900">Operational Control Center</h1>
+              <p className="text-sm text-slate-500">Switch between live stakeholder workspaces without changing environments.</p>
             </div>
+          </div>
+          <div className="flex flex-col gap-2 items-start lg:items-end">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Persona View</span>
+            <RoleSwitcher currentRole={currentRole} onRoleChange={setCurrentRole} />
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar with Wallet */}
-          <div className="lg:col-span-1 space-y-4">
-            <WalletConnect onWalletChange={setWalletAddress} />
-
-            {walletAddress && (
-              <div className="relative overflow-hidden p-5 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 border-2 border-emerald-300 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-transparent rounded-full blur-2xl"></div>
-                <div className="relative flex items-start gap-3">
-                  <div className="bg-gradient-to-br from-emerald-500 to-green-600 p-2 rounded-lg shadow-md">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-emerald-900 mb-1">Wallet Connected</p>
-                    <p className="text-sm text-emerald-700 leading-relaxed">
-                      Ready for on-chain transactions
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!walletAddress && (
-              <div className="relative overflow-hidden p-5 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border-2 border-amber-300 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-300">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-400/20 to-transparent rounded-full blur-2xl"></div>
-                <div className="relative flex items-start gap-3">
-                  <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-2 rounded-lg shadow-md">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-amber-900 mb-1">Demo Mode</p>
-                    <p className="text-sm text-amber-700 leading-relaxed">
-                      Connect wallet for blockchain features
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="card p-5">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Current Perspective</p>
+            <h2 className="text-lg font-semibold text-slate-900">
+              {ROLE_CONTEXT[currentRole].label}
+            </h2>
+            <p className="text-sm text-slate-600 mt-1">
+              {ROLE_CONTEXT[currentRole].description}
+            </p>
+            <div className="mt-4 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 inline-flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              Focus: {ROLE_CONTEXT[currentRole].focus}
+            </div>
           </div>
 
-          {/* Dashboard Content */}
+          <div className="card p-5">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Network Health</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-semibold text-slate-900">{networkLatency}</span>
+              <span className="text-sm text-slate-600">ms latency</span>
+            </div>
+            <p className="text-sm text-slate-600 mt-1">Midnight testnet RPC · smart contract channel live</p>
+            <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-600">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Proof relay synchronized
+            </div>
+          </div>
+
+          <div className="card p-5">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Workspace Switching</p>
+            <ul className="space-y-2 text-sm text-slate-600">
+              <li className="flex items-center justify-between">
+                Supplier
+                <span className={`text-xs font-semibold ${currentRole === 'supplier' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  {currentRole === 'supplier' ? 'Active' : 'Available'}
+                </span>
+              </li>
+              <li className="flex items-center justify-between">
+                Buyer
+                <span className={`text-xs font-semibold ${currentRole === 'buyer' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  {currentRole === 'buyer' ? 'Active' : 'Available'}
+                </span>
+              </li>
+              <li className="flex items-center justify-between">
+                Logistics
+                <span className={`text-xs font-semibold ${currentRole === 'logistics' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  {currentRole === 'logistics' ? 'Active' : 'Available'}
+                </span>
+              </li>
+              <li className="flex items-center justify-between">
+                Regulator
+                <span className={`text-xs font-semibold ${currentRole === 'regulator' ? 'text-emerald-600' : 'text-slate-400'}`}>
+                  {currentRole === 'regulator' ? 'Active' : 'Available'}
+                </span>
+              </li>
+            </ul>
+            <p className="text-xs text-slate-500 mt-3">Switching preserves each stakeholder’s permissions and data scope.</p>
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="space-y-4">
+            <WalletConnect onWalletChange={setWalletAddress} />
+
+            <div className="card p-5">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Session Notes</p>
+              <p className="text-sm text-slate-600">
+                Rotate through personas to validate the end-to-end proof workflow that customers will run in production.
+              </p>
+              <p className="text-xs text-slate-500 mt-3">
+                Data you enter as one role becomes live context for the others.
+              </p>
+            </div>
+          </div>
+
           <div className="lg:col-span-3">
             {renderDashboard()}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

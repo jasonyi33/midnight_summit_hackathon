@@ -52,35 +52,30 @@ export default function RegulatorDashboard({ user, orders }: RegulatorDashboardP
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={<Shield className="text-purple-600" />}
           label="Total Compliance Checks"
           value={complianceRecords.length}
-          bgColor="bg-gradient-to-br from-purple-50 to-fuchsia-50"
-          iconBg="bg-gradient-to-br from-purple-500 to-fuchsia-600"
+          accent="bg-purple-100 text-purple-700"
         />
         <StatCard
           icon={<CheckCircle className="text-green-600" />}
           label="Verified Proofs"
           value={verifiedCount}
-          bgColor="bg-gradient-to-br from-green-50 to-teal-50"
-          iconBg="bg-gradient-to-br from-green-500 to-teal-600"
+          accent="bg-emerald-100 text-emerald-700"
         />
         <StatCard
           icon={<FileCheck className="text-blue-600" />}
           label="Total Orders"
           value={totalOrders}
-          bgColor="bg-gradient-to-br from-blue-50 to-cyan-50"
-          iconBg="bg-gradient-to-br from-blue-500 to-cyan-600"
+          accent="bg-blue-100 text-blue-700"
         />
         <StatCard
           icon={<CheckCircle className="text-emerald-600" />}
           label="Completed"
           value={completedOrders}
-          bgColor="bg-gradient-to-br from-emerald-50 to-green-50"
-          iconBg="bg-gradient-to-br from-emerald-500 to-green-600"
+          accent="bg-slate-100 text-slate-700"
         />
       </div>
 
@@ -166,17 +161,18 @@ export default function RegulatorDashboard({ user, orders }: RegulatorDashboardP
         </div>
       </div>
 
-      {/* Order Audit Trail */}
-      <div className="bg-gradient-to-br from-white via-blue-50/20 to-white rounded-2xl shadow-xl border-2 border-blue-200 p-8">
-        <h2 className="text-3xl font-black bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 bg-clip-text text-transparent mb-6">Order Audit Trail</h2>
+      <div className="card p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Oversight</p>
+            <h2 className="text-2xl font-semibold text-slate-900">Order Audit Trail</h2>
+          </div>
+          <span className="text-xs font-semibold text-slate-500">{orders.length} entries</span>
+        </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <FileCheck className="text-blue-600" size={32} />
-            </div>
-            <p className="text-gray-600 text-lg">No orders to audit yet</p>
-            <p className="text-gray-500 text-sm mt-1">Orders will appear here for compliance review</p>
+          <div className="text-center py-12 text-slate-500">
+            Orders will appear here for compliance review.
           </div>
         ) : (
           <div className="space-y-4">
@@ -187,17 +183,20 @@ export default function RegulatorDashboard({ user, orders }: RegulatorDashboardP
         )}
       </div>
 
-      {/* Compliance Timeline */}
-      <div className="bg-gradient-to-br from-white via-green-50/20 to-white rounded-2xl shadow-xl border-2 border-green-200 p-8">
-        <h2 className="text-3xl font-black bg-gradient-to-r from-green-700 via-emerald-700 to-teal-700 bg-clip-text text-transparent mb-6">Recent Compliance Events</h2>
+      <div className="card p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent Activity</p>
+            <h2 className="text-2xl font-semibold text-slate-900">Recent Compliance Events</h2>
+          </div>
+          <span className="text-xs font-semibold text-slate-500">
+            {Math.min(complianceRecords.length, 10)} shown
+          </span>
+        </div>
 
         {complianceRecords.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="bg-blue-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-              <Shield className="text-blue-600" size={32} />
-            </div>
-            <p className="text-gray-600 text-lg">No compliance events yet</p>
-            <p className="text-gray-500 text-sm mt-1">Compliance activities will be logged here</p>
+          <div className="text-center py-12 text-slate-500">
+            Compliance activities will be logged here.
           </div>
         ) : (
           <div className="space-y-3">
@@ -214,23 +213,21 @@ export default function RegulatorDashboard({ user, orders }: RegulatorDashboardP
   );
 }
 
-function StatCard({ icon, label, value, bgColor, iconBg }: {
+function StatCard({ icon, label, value, accent }: {
   icon: ReactNode;
   label: string;
   value: string | number;
-  bgColor: string;
-  iconBg: string;
+  accent: string;
 }) {
   return (
-    <div className={`relative overflow-hidden ${bgColor} rounded-2xl p-6 border-2 border-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group cursor-pointer`}>
-      <div className="absolute top-0 right-0 w-24 h-24 bg-white/30 rounded-full blur-2xl group-hover:w-32 group-hover:h-32 transition-all duration-300"></div>
-      <div className="relative flex items-center gap-4">
-        <div className={`${iconBg} p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300`}>
+    <div className="card p-5">
+      <div className="flex items-center gap-4">
+        <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${accent}`}>
           {icon}
         </div>
         <div>
-          <p className="text-sm font-bold text-gray-700 mb-1 uppercase tracking-wide">{label}</p>
-          <p className="text-4xl font-black text-gray-900">{value}</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</p>
+          <p className="text-3xl font-semibold text-slate-900">{value}</p>
         </div>
       </div>
     </div>
@@ -239,99 +236,91 @@ function StatCard({ icon, label, value, bgColor, iconBg }: {
 
 function OrderAuditCard({ order }: { order: Order }) {
   const statusColors = {
-    pending_approval: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300',
-    approved: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-300',
-    in_transit: 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-300',
-    delivered: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300',
-    payment_released: 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-300'
+    pending_approval: 'bg-amber-50 text-amber-700 border-amber-200',
+    approved: 'bg-blue-50 text-blue-700 border-blue-200',
+    in_transit: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    delivered: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    payment_released: 'bg-teal-50 text-teal-700 border-teal-200'
   };
 
   return (
-    <div className="relative overflow-hidden border-2 border-blue-200 rounded-2xl p-6 hover:shadow-xl hover:border-blue-400 transition-all duration-300 bg-gradient-to-br from-white via-blue-50/20 to-white transform hover:-translate-y-1 group">
-      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl group-hover:w-48 group-hover:h-48 transition-all duration-300"></div>
-      <div className="relative flex items-start justify-between mb-5">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="font-mono text-sm font-bold text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-2 rounded-lg shadow-sm">{order.id}</span>
-            <span className={`px-4 py-2 rounded-xl text-xs font-black border-2 shadow-sm ${statusColors[order.status]}`}>
-              {order.status.replace(/_/g, ' ').toUpperCase()}
-            </span>
-          </div>
+    <div className="border border-slate-200 rounded-2xl p-6 bg-white shadow-sm">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-1.5 rounded border border-slate-200">
+            {order.id}
+          </span>
+          <span className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${statusColors[order.status]}`}>
+            {order.status.replace(/_/g, ' ').toUpperCase()}
+          </span>
         </div>
         {order.zkProof && (
-          <div className="flex items-center gap-2 bg-gradient-to-r from-green-100 to-emerald-100 px-4 py-2 rounded-xl border-2 border-green-300 shadow-sm">
-            <CheckCircle size={18} className="text-green-700" />
-            <span className="text-xs text-green-800 font-black">ZK VERIFIED</span>
-          </div>
+          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-1.5">
+            <CheckCircle size={16} />
+            ZK verified
+          </span>
         )}
       </div>
 
-      <div className="relative space-y-4 text-sm">
-        <div className="flex items-center justify-between">
-          <span className="text-gray-600 font-bold">Quantity:</span>
-          <div className="flex items-center gap-2">
-            <span className="font-black text-gray-900 text-base">{order.quantity} units</span>
-            <PrivacyBadge isLocked={false} />
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-600">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-slate-700">Quantity</span>
+          <span className="text-slate-900 font-semibold">{order.quantity} units</span>
+          <PrivacyBadge isLocked={false} />
         </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-gray-600 font-bold">Price:</span>
-          <div className="flex items-center gap-2">
-            <span className="font-black text-gray-400 text-base">████████</span>
-            <PrivacyBadge isLocked={true} />
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-slate-700">Price</span>
+          <span className="text-slate-400 font-semibold tracking-widest">████████</span>
+          <PrivacyBadge isLocked={true} />
         </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-gray-600 font-bold">Delivery Location:</span>
-          <span className="font-mono text-xs font-bold text-gray-900 bg-gray-100 px-3 py-1.5 rounded-md">
+        <div>
+          <span className="font-semibold text-slate-700 block">Delivery Location</span>
+          <span className="font-mono text-xs font-semibold text-slate-900 bg-slate-50 px-2 py-1 rounded border border-slate-200">
             {order.deliveryLocation.lat.toFixed(4)}, {order.deliveryLocation.lng.toFixed(4)}
           </span>
         </div>
-
-        {order.zkProof && (
-          <div className="pt-4 border-t-2 border-purple-200">
-            <span className="text-gray-700 font-black text-xs uppercase tracking-wide">ZK Proof Hash:</span>
-            <div className="font-mono text-xs text-purple-700 break-all mt-3 bg-gradient-to-r from-purple-50 to-fuchsia-50 p-3 rounded-lg border-2 border-purple-200 shadow-sm">
-              {order.zkProof}
-            </div>
-          </div>
-        )}
       </div>
+
+      {order.zkProof && (
+        <div className="mt-5 border-t border-slate-200 pt-4">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ZK Proof Hash</span>
+          <p className="font-mono text-xs text-slate-800 break-all mt-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+            {order.zkProof}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
 function ComplianceEventCard({ record }: { record: ComplianceRecord }) {
   return (
-    <div className="relative overflow-hidden flex items-center gap-4 p-5 bg-gradient-to-r from-green-50 via-emerald-50/50 to-white border-2 border-green-200 rounded-2xl hover:shadow-lg hover:border-green-300 transition-all duration-300 group">
-      <div className="absolute top-0 right-0 w-24 h-24 bg-green-400/10 rounded-full blur-xl group-hover:w-32 group-hover:h-32 transition-all"></div>
-      <div className={`relative p-3 rounded-xl shadow-md ${record.verified ? 'bg-gradient-to-br from-green-100 to-emerald-100 border-2 border-green-300' : 'bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-amber-300'}`}>
+    <div className="flex items-center gap-4 p-5 border border-slate-200 rounded-2xl bg-white shadow-sm">
+      <div className={`p-3 rounded-xl ${record.verified ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
         {record.verified ? (
-          <CheckCircle size={22} className="text-green-700" />
+          <CheckCircle size={18} />
         ) : (
-          <AlertCircle size={22} className="text-amber-700" />
+          <AlertCircle size={18} />
         )}
       </div>
 
-      <div className="relative flex-1 min-w-0">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="font-black text-sm text-gray-900">{record.action}</span>
-          <span className="text-xs text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded-md">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3 mb-1">
+          <span className="text-sm font-semibold text-slate-900">{record.action}</span>
+          <span className="text-xs font-semibold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
             {new Date(record.timestamp).toLocaleString()}
           </span>
         </div>
-        <div className="text-xs text-gray-700 font-mono font-bold truncate bg-gray-50 px-2 py-1 rounded inline-block">
+        <div className="text-xs text-slate-600 font-mono font-semibold truncate bg-slate-50 px-2 py-1 rounded border border-slate-200 inline-block">
           Order: {record.orderId}
         </div>
       </div>
 
-      <div className="relative text-xs">
+      <div className="text-xs font-semibold">
         {record.verified ? (
-          <span className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 font-black border-2 border-green-300 shadow-sm">VERIFIED</span>
+          <span className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">VERIFIED</span>
         ) : (
-          <span className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 font-black border-2 border-amber-300 shadow-sm">PENDING</span>
+          <span className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200">PENDING</span>
         )}
       </div>
     </div>
