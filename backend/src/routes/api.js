@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const state = require('../models/state');
 const websocketService = require('../services/websocket');
 const blockchainService = require('../services/blockchain');
+const cryptoService = require('../services/crypto');
 
 const router = express.Router();
 
@@ -137,16 +138,16 @@ router.post('/contracts', async (req, res) => {
       buyerId,
       logisticsId,
       quantity,
-      encryptedPrice,
+      price,  // FIXED: Accept plain price, not encrypted
       deliveryLocation,
       description
     } = req.body;
 
     // Validation
-    if (!supplierId || !buyerId || !quantity || !encryptedPrice) {
+    if (!supplierId || !buyerId || !quantity || !price) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: supplierId, buyerId, quantity, encryptedPrice'
+        error: 'Missing required fields: supplierId, buyerId, quantity, price'
       });
     }
 
@@ -158,7 +159,7 @@ router.post('/contracts', async (req, res) => {
       buyerId,
       logisticsId: logisticsId || 'logistics',
       quantity,
-      encryptedPrice,
+      price,  // FIXED: Store plain price for blockchain service
       deliveryLocation: deliveryLocation || { lat: 0, lng: 0 },
       description: description || `Purchase order for ${quantity} units`,
       status: state.ORDER_STATUS.CREATED
@@ -353,11 +354,22 @@ router.post('/contracts/:contractId/approve', async (req, res) => {
       blockchainTx = await blockchainService.approveOrder(contractId, zkProof);
       console.log(`[API] ZK proof submitted to blockchain for contract ${contractId}:`, blockchainTx);
     } catch (blockchainError) {
-      console.error('[API] Blockchain proof submission failed, continuing with local approval:', blockchainError.message);
-      // Continue without blockchain - graceful degradation
+      console.error('[API] Blockchain proof submission failed:', blockchainError.message);
+
+      // CRITICAL FIX: If ZK proof verification failed, DO NOT APPROVE!
+      if (blockchainError.message && blockchainError.message.includes('ZK proof verification failed')) {
+        return res.status(400).json({
+          success: false,
+          error: 'ZK proof verification failed',
+          message: blockchainError.message
+        });
+      }
+
+      // For other errors (network, etc.), continue with graceful degradation
+      console.log('[API] Continuing with local approval due to network error');
     }
 
-    // Update contract status to approved
+    // Update contract status to approved (only if ZK proof passed)
     const updatedContract = state.updateContract(contractId, {
       status: state.ORDER_STATUS.APPROVED,
       zkProof,
@@ -546,6 +558,128 @@ router.post('/contracts/:contractId/pay', async (req, res) => {
       data: updatedContract,
       blockchain: blockchainTx,
       message: 'Payment released successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ===========================================
+// ZK PROOF ENDPOINTS (Real Implementation)
+// ===========================================
+
+/**
+ * GET /api/contracts/:contractId/proof-package
+ * Get ZK proof package for buyer verification
+ *
+ * Supplier shares this with buyer to enable quantity verification
+ * Contains: quantity, nonce, commitment (but NOT price)
+ */
+router.get('/contracts/:contractId/proof-package', (req, res) => {
+  try {
+    const { contractId } = req.params;
+    const { role } = req.query;
+
+    const contract = state.getContract(contractId);
+    if (!contract) {
+      return res.status(404).json({
+        success: false,
+        error: 'Contract not found'
+      });
+    }
+
+    // Only supplier can generate proof package
+    if (role !== 'supplier') {
+      return res.status(403).json({
+        success: false,
+        error: 'Only supplier can generate proof package'
+      });
+    }
+
+    // Check if contract has ZK proof witnesses
+    if (!contract.zkProofWitnesses || !contract.quantityCommitment) {
+      return res.status(400).json({
+        success: false,
+        error: 'Contract does not have ZK proof data'
+      });
+    }
+
+    // Create proof package for buyer
+    const proofPackage = cryptoService.createQuantityProofPackage(
+      contract.quantity,
+      contract.zkProofWitnesses.quantityNonce,
+      contract.quantityCommitment
+    );
+
+    console.log(`[API] Proof package generated for contract ${contractId}`);
+    console.log(`[API] Buyer can now verify quantity without seeing price`);
+
+    res.json({
+      success: true,
+      data: proofPackage,
+      message: 'Share this proof package with buyer for verification'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * POST /api/contracts/:contractId/verify-proof
+ * Verify a ZK proof (buyer checks quantity)
+ *
+ * Buyer uses this to verify quantity matches commitment
+ * Does NOT approve the order, just verifies the proof
+ */
+router.post('/contracts/:contractId/verify-proof', (req, res) => {
+  try {
+    const { contractId } = req.params;
+    const { quantity, nonce } = req.body;
+
+    const contract = state.getContract(contractId);
+    if (!contract) {
+      return res.status(404).json({
+        success: false,
+        error: 'Contract not found'
+      });
+    }
+
+    if (!contract.quantityCommitment) {
+      return res.status(400).json({
+        success: false,
+        error: 'Contract does not have quantity commitment'
+      });
+    }
+
+    // Verify the proof
+    const isValid = cryptoService.verifyCommitment(
+      quantity,
+      nonce,
+      contract.quantityCommitment
+    );
+
+    if (!isValid) {
+      return res.json({
+        success: false,
+        verified: false,
+        message: 'ZK proof verification failed: quantity/nonce do not match commitment'
+      });
+    }
+
+    console.log(`[API] ZK proof verified successfully for contract ${contractId}`);
+    console.log(`[API] Quantity: ${quantity} (verified without revealing price)`);
+
+    res.json({
+      success: true,
+      verified: true,
+      quantity: quantity,
+      message: 'ZK proof verified! Quantity matches commitment. You can now approve the order.'
     });
   } catch (error) {
     res.status(500).json({

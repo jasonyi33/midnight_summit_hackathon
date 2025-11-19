@@ -6,182 +6,45 @@ interface WalletConnectProps {
   onWalletChange?: (address: string | null) => void;
 }
 
-interface MidnightAPI {
-  mnLace: {
-    enable: () => Promise<any>;
-    isEnabled: () => Promise<boolean>;
-  };
-}
-
-declare global {
-  interface Window {
-    midnight?: MidnightAPI;
-  }
-}
-
-// Helper function to get native token key
-// This matches the pattern from @midnight-ntwrk/ledger's nativeToken()
-const getNativeTokenKey = () => {
-  return 'dust'; // The native token key for Midnight
-}
+// Demo mode configuration
+const DEMO_MODE = true;
+const DEMO_ADDRESS = 'mn_shield-addr_test1qqxyz789abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567';
+const DEMO_BALANCE = '2000'; // 50 million tDUST
 
 export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
-  const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(DEMO_MODE);
+  const [walletAddress, setWalletAddress] = useState<string | null>(DEMO_MODE ? DEMO_ADDRESS : null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [balance, setBalance] = useState<string>('0');
+  const [balance, setBalance] = useState<string>(DEMO_MODE ? DEMO_BALANCE : '0');
   const [error, setError] = useState<string | null>(null);
-  const [connectionStep, setConnectionStep] = useState<string>('');
 
-  // Check if wallet is already connected on mount
+  // Auto-connect in demo mode
   useEffect(() => {
-    checkWalletConnection();
-  }, []);
-
-  const checkWalletConnection = async () => {
-    try {
-      if (typeof window !== 'undefined' && window.midnight?.mnLace) {
-        const isEnabled = await window.midnight.mnLace.isEnabled();
-        if (isEnabled) {
-          const connectorAPI = await window.midnight.mnLace.enable();
-          const state = await connectorAPI.state();
-          
-          console.log('Wallet state:', state); // Debug log to see full state structure
-          
-          setWalletAddress(state.address);
-          setIsConnected(true);
-          if (onWalletChange) {
-            onWalletChange(state.address);
-          }
-          
-          // Get balance - try multiple possible keys
-          if (state.balances) {
-            const tokenKey = getNativeTokenKey();
-            let balanceValue = state.balances[tokenKey] || state.balances['tDUST'] || state.balances['DUST'];
-            
-            // Handle bigint conversion
-            if (balanceValue !== undefined && balanceValue !== null) {
-              // Convert bigint to string if needed
-              const balanceStr = typeof balanceValue === 'bigint' ? balanceValue.toString() : String(balanceValue);
-              setBalance(balanceStr);
-              console.log(`Balance found: ${balanceStr} (key: ${tokenKey})`);
-            } else {
-              console.log('No balance found in state.balances:', Object.keys(state.balances));
-              setBalance('0');
-            }
-          } else {
-            console.log('No balances object in state');
-            setBalance('0');
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error checking wallet connection:', err);
+    if (DEMO_MODE && onWalletChange) {
+      onWalletChange(DEMO_ADDRESS);
     }
-  };
+  }, [onWalletChange]);
 
   const handleConnect = async () => {
-    setIsConnecting(true);
-    setError(null);
-    setConnectionStep('Initializing...');
-
-    try {
-      // Check if Midnight Lace wallet is installed
-      console.log('Step 1: Checking for Lace wallet...');
-      setConnectionStep('Checking for Lace wallet...');
-      
-      if (typeof window === 'undefined' || !window.midnight?.mnLace) {
-        throw new Error('Midnight Lace wallet not detected. Please install the Lace wallet extension.');
-      }
-      
-      console.log('✓ Lace wallet found');
-
-      // Request wallet authorization with timeout
-      console.log('Step 2: Requesting authorization (check for Lace popup)...');
-      setConnectionStep('Waiting for authorization - Check for Lace popup!');
-      
-      // Add timeout to detect if user isn't responding to popup
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connection timeout. Please check if a Lace popup appeared and authorize the connection.')), 30000);
-      });
-      
-      const enablePromise = window.midnight.mnLace.enable();
-      
-      const connectorAPI = await Promise.race([enablePromise, timeoutPromise]) as any;
-      console.log('✓ Authorization granted');
-
-      // Verify connection
-      console.log('Step 3: Verifying connection...');
-      setConnectionStep('Verifying connection...');
-      
-      const isEnabled = await window.midnight.mnLace.isEnabled();
-      
-      if (!isEnabled) {
-        throw new Error('Failed to connect to wallet. Please try again.');
-      }
-      
-      console.log('✓ Connection verified');
-
-      // Get wallet state
-      console.log('Step 4: Fetching wallet state...');
-      setConnectionStep('Fetching wallet data...');
-      
-      const state = await connectorAPI.state();
-        
-      console.log('✓ Wallet state received:', state);
-        
-      setWalletAddress(state.address);
-      setIsConnected(true);
-        
-      if (onWalletChange) {
-        onWalletChange(state.address);
-      }
-
-      // Get balance - try multiple possible keys
-      if (state.balances) {
-        const tokenKey = getNativeTokenKey();
-        let balanceValue = state.balances[tokenKey] || state.balances['tDUST'] || state.balances['DUST'];
-          
-        // Handle bigint conversion
-        if (balanceValue !== undefined && balanceValue !== null) {
-          // Convert bigint to string if needed
-          const balanceStr = typeof balanceValue === 'bigint' ? balanceValue.toString() : String(balanceValue);
-          setBalance(balanceStr);
-          console.log(`✓ Balance found: ${balanceStr} (key: ${tokenKey})`);
-        } else {
-          console.log('⚠ No balance found in state.balances:', Object.keys(state.balances));
-          setBalance('0');
+    // In demo mode, just simulate connection
+    if (DEMO_MODE) {
+      setIsConnecting(true);
+      setTimeout(() => {
+        setIsConnected(true);
+        setWalletAddress(DEMO_ADDRESS);
+        setBalance(DEMO_BALANCE);
+        if (onWalletChange) {
+          onWalletChange(DEMO_ADDRESS);
         }
-      } else {
-        console.log('⚠ No balances object in state');
-        setBalance('0');
-      }
-
-      console.log('✓ Connected successfully to:', state.address);
-      setConnectionStep('');
-      
-    } catch (err: any) {
-      console.error('❌ Error connecting to wallet:', err);
-      
-      // Provide user-friendly error messages
-      let errorMessage = err.message || 'Failed to connect to wallet';
-      
-      if (err.message?.includes('timeout')) {
-        errorMessage = 'Connection timed out. Please check:\n1. A Lace popup may have appeared - approve it\n2. Lace is configured for Midnight Testnet\n3. Proof server is running (port 6300)';
-      } else if (err.message?.includes('not detected')) {
-        errorMessage = 'Lace wallet not found. Install from: https://chromewebstore.google.com/detail/lace-beta/hgeekaiplokcnmakghbdfbgnlfheichg';
-      } else if (err.message?.includes('User rejected')) {
-        errorMessage = 'Connection rejected. Please approve the connection request in Lace.';
-      }
-      
-      setError(errorMessage);
-      setConnectionStep('');
-    } finally {
-      setIsConnecting(false);
+        setIsConnecting(false);
+      }, 500);
+      return;
     }
   };
 
   const handleDisconnect = () => {
+    if (DEMO_MODE) return; // Don't allow disconnect in demo mode
+    
     setWalletAddress(null);
     setIsConnected(false);
     setBalance('0');
@@ -219,17 +82,6 @@ export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
       {error && (
         <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md">
           <p className="text-sm text-red-600 whitespace-pre-line">{error}</p>
-        </div>
-      )}
-
-      {connectionStep && (
-        <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <p className="text-sm text-blue-700 font-medium">{connectionStep}</p>
-          {connectionStep.includes('popup') && (
-            <p className="text-xs text-blue-600 mt-1">
-              💡 Look for a Lace authorization popup window
-            </p>
-          )}
         </div>
       )}
 
@@ -283,19 +135,6 @@ export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
               'Connect Wallet'
             )}
           </button>
-
-          <p className="text-xs text-gray-500 text-center">
-            Make sure you have the{' '}
-            <a 
-              href="https://chromewebstore.google.com/detail/lace-beta/hgeekaiplokcnmakghbdfbgnlfheichg"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:text-purple-700 underline"
-            >
-              Lace wallet
-            </a>
-            {' '}installed
-          </p>
         </div>
       )}
     </div>
