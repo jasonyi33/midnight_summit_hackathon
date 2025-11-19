@@ -46,19 +46,22 @@ export default function SupplierDashboard({ user, orders, onCreateOrder }: Suppl
           icon={<Package className="text-emerald-600" />}
           label="Total Orders"
           value={supplierOrders.length}
-          bgColor="bg-emerald-50"
+          bgColor="bg-gradient-to-br from-emerald-50 to-teal-50"
+          iconBg="bg-gradient-to-br from-emerald-500 to-teal-600"
         />
         <StatCard
           icon={<Clock className="text-amber-600" />}
           label="Pending"
           value={supplierOrders.filter(o => o.status === 'pending_approval').length}
-          bgColor="bg-amber-50"
+          bgColor="bg-gradient-to-br from-amber-50 to-orange-50"
+          iconBg="bg-gradient-to-br from-amber-500 to-orange-600"
         />
         <StatCard
           icon={<CheckCircle className="text-blue-600" />}
           label="Delivered"
           value={supplierOrders.filter(o => o.status === 'delivered').length}
-          bgColor="bg-blue-50"
+          bgColor="bg-gradient-to-br from-blue-50 to-indigo-50"
+          iconBg="bg-gradient-to-br from-blue-500 to-indigo-600"
         />
         <StatCard
           icon={<DollarSign className="text-green-600" />}
@@ -67,18 +70,26 @@ export default function SupplierDashboard({ user, orders, onCreateOrder }: Suppl
             .filter(o => o.status === 'payment_released')
             .reduce((sum, o) => sum + o.price, 0)
             .toLocaleString()}`}
-          bgColor="bg-green-50"
+          bgColor="bg-gradient-to-br from-green-50 to-emerald-50"
+          iconBg="bg-gradient-to-br from-green-500 to-emerald-600"
         />
       </div>
 
       {/* Create Order Form */}
-      <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8 hover:shadow-md transition-shadow">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-2 rounded-lg">
-            <Package size={24} className="text-white" />
-          </div>
-          Create New Order
-        </h2>
+      <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-white rounded-2xl shadow-xl border-2 border-blue-200 p-8 hover:shadow-2xl transition-all duration-300">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 via-indigo-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+        <div className="relative">
+          <h2 className="text-3xl font-black text-gray-900 mb-6 flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl blur-md opacity-50"></div>
+              <div className="relative bg-gradient-to-br from-emerald-500 to-teal-600 p-3 rounded-xl shadow-lg">
+                <Package size={24} className="text-white" />
+              </div>
+            </div>
+            <span className="bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-700 bg-clip-text text-transparent">
+              Create New Order
+            </span>
+          </h2>
 
         <form onSubmit={handleCreateOrder} className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
@@ -149,16 +160,24 @@ export default function SupplierDashboard({ user, orders, onCreateOrder }: Suppl
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+            className="relative w-full overflow-hidden group"
           >
-            Create Order with ZK Proof
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-all duration-300"></div>
+            <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-5 px-6 rounded-xl font-bold text-lg shadow-xl group-hover:shadow-2xl transform group-hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
+              <Package size={20} />
+              Create Order with ZK Proof
+              <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </div>
           </button>
         </form>
+        </div>
       </div>
 
       {/* Orders List */}
-      <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Orders</h2>
+      <div className="bg-gradient-to-br from-white via-purple-50/20 to-white rounded-2xl shadow-xl border-2 border-purple-200 p-8">
+        <h2 className="text-3xl font-black bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 bg-clip-text text-transparent mb-6">Your Orders</h2>
 
         {supplierOrders.length === 0 ? (
           <div className="text-center py-12">
@@ -180,21 +199,23 @@ export default function SupplierDashboard({ user, orders, onCreateOrder }: Suppl
   );
 }
 
-function StatCard({ icon, label, value, bgColor }: {
+function StatCard({ icon, label, value, bgColor, iconBg }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   bgColor: string;
+  iconBg: string;
 }) {
   return (
-    <div className="bg-white rounded-xl p-6 border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-      <div className="flex items-center gap-4">
-        <div className={`${bgColor} p-3 rounded-lg`}>
+    <div className={`relative overflow-hidden ${bgColor} rounded-2xl p-6 border-2 border-white shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group cursor-pointer`}>
+      <div className="absolute top-0 right-0 w-24 h-24 bg-white/30 rounded-full blur-2xl group-hover:w-32 group-hover:h-32 transition-all duration-300"></div>
+      <div className="relative flex items-center gap-4">
+        <div className={`${iconBg} p-4 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300`}>
           {icon}
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">{label}</p>
-          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm font-bold text-gray-700 mb-1 uppercase tracking-wide">{label}</p>
+          <p className="text-4xl font-black text-gray-900">{value}</p>
         </div>
       </div>
     </div>
@@ -203,38 +224,39 @@ function StatCard({ icon, label, value, bgColor }: {
 
 function OrderCard({ order, showPrice }: { order: Order; showPrice: boolean }) {
   const statusColors = {
-    pending_approval: 'bg-amber-100 text-amber-700 border-amber-200',
-    approved: 'bg-blue-100 text-blue-700 border-blue-200',
-    in_transit: 'bg-purple-100 text-purple-700 border-purple-200',
-    delivered: 'bg-green-100 text-green-700 border-green-200',
-    payment_released: 'bg-emerald-100 text-emerald-700 border-emerald-200'
+    pending_approval: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-amber-300',
+    approved: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-blue-300',
+    in_transit: 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-300',
+    delivered: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300',
+    payment_released: 'bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border-emerald-300'
   };
 
   return (
-    <div className="border border-blue-100 rounded-xl p-5 hover:shadow-md hover:border-blue-200 transition-all bg-white">
-      <div className="flex items-center justify-between">
+    <div className="relative overflow-hidden border-2 border-blue-200 rounded-2xl p-6 hover:shadow-xl hover:border-blue-400 transition-all duration-300 bg-gradient-to-br from-white via-blue-50/20 to-white transform hover:-translate-y-1 group">
+      <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-2xl group-hover:w-48 group-hover:h-48 transition-all duration-300"></div>
+      <div className="relative flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="font-mono text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-md">{order.id}</span>
-            <span className={`px-3 py-1 rounded-lg text-xs font-semibold border ${statusColors[order.status]}`}>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="font-mono text-sm font-bold text-gray-700 bg-gradient-to-r from-gray-100 to-gray-200 px-4 py-2 rounded-lg shadow-sm">{order.id}</span>
+            <span className={`px-4 py-2 rounded-xl text-xs font-black border-2 shadow-sm ${statusColors[order.status]}`}>
               {order.status.replace(/_/g, ' ').toUpperCase()}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-6 text-sm">
             <div>
-              <span className="text-gray-500 font-medium">Quantity:</span>
-              <span className="ml-2 font-bold text-gray-900">{order.quantity} units</span>
+              <span className="text-gray-600 font-bold">Quantity:</span>
+              <span className="ml-2 font-black text-gray-900 text-base">{order.quantity} units</span>
             </div>
             {showPrice && (
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 font-medium">Price:</span>
-                <span className="ml-2 font-bold text-gray-900">${order.price.toLocaleString()}</span>
+                <span className="text-gray-600 font-bold">Price:</span>
+                <span className="ml-2 font-black text-gray-900 text-base">${order.price.toLocaleString()}</span>
                 <PrivacyBadge isLocked={true} />
               </div>
             )}
             <div>
-              <span className="text-gray-500 font-medium">Created:</span>
-              <span className="ml-2 font-bold text-gray-900">
+              <span className="text-gray-600 font-bold">Created:</span>
+              <span className="ml-2 font-black text-gray-900 text-base">
                 {new Date(order.createdAt).toLocaleDateString()}
               </span>
             </div>

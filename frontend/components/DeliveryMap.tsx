@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Order } from '@/lib/types';
-import { MapPin, Navigation } from 'lucide-react';
+import { MapPin, Navigation, TrendingUp, Clock, Zap } from 'lucide-react';
 
 interface DeliveryMapProps {
   orders: Order[];
@@ -10,59 +10,102 @@ interface DeliveryMapProps {
   onSelectOrder: (order: Order) => void;
 }
 
+interface DeliveryProgress {
+  lat: number;
+  lng: number;
+  progress: number; // 0-100
+  speed: number; // km/h
+  eta: number; // minutes
+}
+
 export default function DeliveryMap({ orders, selectedOrder, onSelectOrder }: DeliveryMapProps) {
-  // Simple canvas-based map visualization (avoiding SSR issues with Leaflet)
-  const [currentPositions, setCurrentPositions] = useState<Map<string, { lat: number; lng: number }>>(new Map());
+  const [deliveryProgress, setDeliveryProgress] = useState<Map<string, DeliveryProgress>>(new Map());
 
   useEffect(() => {
-    // Simulate GPS tracking - move orders towards their destinations
+    // Simulate GPS tracking with realistic movement
     const interval = setInterval(() => {
-      setCurrentPositions(prev => {
+      setDeliveryProgress(prev => {
         const updated = new Map(prev);
         orders.forEach(order => {
           const current = prev.get(order.id) || {
-            lat: order.deliveryLocation.lat - 0.1,
-            lng: order.deliveryLocation.lng - 0.1
+            lat: order.deliveryLocation.lat - 0.15,
+            lng: order.deliveryLocation.lng - 0.15,
+            progress: 0,
+            speed: 45 + Math.random() * 20, // 45-65 km/h
+            eta: 30 + Math.random() * 40 // 30-70 minutes
           };
 
-          // Move 10% closer to destination
-          const newLat = current.lat + (order.deliveryLocation.lat - current.lat) * 0.1;
-          const newLng = current.lng + (order.deliveryLocation.lng - current.lng) * 0.1;
+          // Calculate distance to destination
+          const latDiff = order.deliveryLocation.lat - current.lat;
+          const lngDiff = order.deliveryLocation.lng - current.lng;
+          const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
 
-          updated.set(order.id, { lat: newLat, lng: newLng });
+          // Move with variable speed (2-5% closer per tick)
+          const moveRate = 0.02 + Math.random() * 0.03;
+          const newLat = current.lat + latDiff * moveRate;
+          const newLng = current.lng + lngDiff * moveRate;
+          const newProgress = Math.min(100, current.progress + (moveRate * 100));
+
+          // Update speed and ETA
+          const newSpeed = 40 + Math.random() * 30 + (newProgress / 5); // Speed increases with progress
+          const remainingDistance = (100 - newProgress) / 100;
+          const newEta = Math.max(1, Math.floor(remainingDistance * (25 + Math.random() * 15)));
+
+          updated.set(order.id, {
+            lat: newLat,
+            lng: newLng,
+            progress: newProgress,
+            speed: newSpeed,
+            eta: newEta
+          });
         });
         return updated;
       });
-    }, 1000);
+    }, 800); // Update every 800ms for smooth animation
 
     return () => clearInterval(interval);
   }, [orders]);
 
   return (
     <div className="space-y-4">
-      {/* Simplified Map Visualization */}
-      <div className="bg-gray-100 rounded-lg p-8 relative h-96 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50 opacity-50" />
-
-        {/* Grid lines for map effect */}
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-8 opacity-20">
-          {Array.from({ length: 64 }).map((_, i) => (
-            <div key={i} className="border border-gray-300" />
-          ))}
+      {/* Enhanced Map Visualization */}
+      <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 rounded-xl p-8 relative h-[500px] overflow-hidden shadow-2xl border border-slate-600">
+        {/* Animated Background with "Map" Effect */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-blue-900/20 to-purple-900/20" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
         </div>
 
-        {/* Plot orders on map */}
+        {/* Sophisticated Grid */}
+        <div className="absolute inset-0">
+          {/* Major grid lines */}
+          <div className="absolute inset-0 grid grid-cols-10 grid-rows-10">
+            {Array.from({ length: 100 }).map((_, i) => (
+              <div key={i} className="border border-slate-600/30" />
+            ))}
+          </div>
+          {/* Minor grid lines */}
+          <div className="absolute inset-0 grid grid-cols-20 grid-rows-20 opacity-50">
+            {Array.from({ length: 400 }).map((_, i) => (
+              <div key={i} className="border border-slate-600/10" />
+            ))}
+          </div>
+        </div>
+
+        {/* Plot deliveries on map */}
         <div className="relative h-full">
           {orders.map((order) => {
-            const current = currentPositions.get(order.id) || {
-              lat: order.deliveryLocation.lat - 0.1,
-              lng: order.deliveryLocation.lng - 0.1
+            const progress = deliveryProgress.get(order.id) || {
+              lat: order.deliveryLocation.lat - 0.15,
+              lng: order.deliveryLocation.lng - 0.15,
+              progress: 0,
+              speed: 50,
+              eta: 30
             };
 
             // Normalize coordinates to fit in the container (0-100%)
-            const normalizedLat = ((current.lat - 37.5) / 0.5) * 100;
-            const normalizedLng = ((current.lng + 123) / 0.5) * 100;
-
+            const normalizedLat = ((progress.lat - 37.5) / 0.5) * 100;
+            const normalizedLng = ((progress.lng + 123) / 0.5) * 100;
             const destLat = ((order.deliveryLocation.lat - 37.5) / 0.5) * 100;
             const destLng = ((order.deliveryLocation.lng + 123) / 0.5) * 100;
 
@@ -70,103 +113,251 @@ export default function DeliveryMap({ orders, selectedOrder, onSelectOrder }: De
 
             return (
               <div key={order.id}>
-                {/* Route line */}
+                {/* Animated Route Path */}
                 <svg className="absolute inset-0 pointer-events-none">
+                  {/* Background route */}
                   <line
                     x1={`${Math.max(0, Math.min(100, normalizedLng))}%`}
                     y1={`${Math.max(0, Math.min(100, 100 - normalizedLat))}%`}
                     x2={`${Math.max(0, Math.min(100, destLng))}%`}
                     y2={`${Math.max(0, Math.min(100, 100 - destLat))}%`}
-                    stroke={isSelected ? '#F59E0B' : '#CBD5E0'}
-                    strokeWidth="2"
-                    strokeDasharray="5,5"
+                    stroke={isSelected ? 'rgba(251, 146, 60, 0.3)' : 'rgba(148, 163, 184, 0.2)'}
+                    strokeWidth="4"
+                    className="transition-all duration-300"
+                  />
+                  {/* Completed route (glowing) */}
+                  <line
+                    x1={`${Math.max(0, Math.min(100, normalizedLng))}%`}
+                    y1={`${Math.max(0, Math.min(100, 100 - normalizedLat))}%`}
+                    x2={`${Math.max(0, Math.min(100, destLng))}%`}
+                    y2={`${Math.max(0, Math.min(100, 100 - destLat))}%`}
+                    stroke={isSelected ? '#FB923C' : '#60A5FA'}
+                    strokeWidth="3"
+                    strokeDasharray={`${progress.progress} ${100 - progress.progress}`}
+                    strokeDashoffset="0"
+                    className="transition-all duration-300"
+                    style={{
+                      filter: isSelected ? 'drop-shadow(0 0 6px rgba(251, 146, 60, 0.8))' : 'drop-shadow(0 0 4px rgba(96, 165, 250, 0.6))'
+                    }}
                   />
                 </svg>
 
-                {/* Current position (truck) */}
+                {/* Moving Truck with Trail Effect */}
                 <button
                   onClick={() => onSelectOrder(order)}
-                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 marker-pulse ${
-                    isSelected ? 'z-20' : 'z-10'
+                  className={`absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
+                    isSelected ? 'z-30 scale-110' : 'z-20'
                   }`}
                   style={{
                     left: `${Math.max(0, Math.min(100, normalizedLng))}%`,
                     top: `${Math.max(0, Math.min(100, 100 - normalizedLat))}%`
                   }}
                 >
-                  <div className={`p-2 rounded-full ${
-                    isSelected ? 'bg-amber-500' : 'bg-blue-500'
-                  } shadow-lg`}>
-                    <Navigation size={16} className="text-white" />
+                  {/* Pulsing ring effect */}
+                  <div className={`absolute inset-0 rounded-full animate-ping ${
+                    isSelected ? 'bg-amber-400' : 'bg-blue-400'
+                  } opacity-75`} style={{ animationDuration: '2s' }} />
+
+                  {/* Truck icon */}
+                  <div className={`relative p-3 rounded-full shadow-2xl transition-all duration-300 ${
+                    isSelected
+                      ? 'bg-gradient-to-br from-amber-400 to-orange-500'
+                      : 'bg-gradient-to-br from-blue-400 to-blue-600'
+                  }`}
+                    style={{
+                      boxShadow: isSelected
+                        ? '0 0 30px rgba(251, 146, 60, 0.6), 0 0 60px rgba(251, 146, 60, 0.3)'
+                        : '0 0 20px rgba(59, 130, 246, 0.4)'
+                    }}
+                  >
+                    <Navigation size={20} className="text-white" style={{ transform: 'rotate(45deg)' }} />
                   </div>
+
+                  {/* Live stats tooltip */}
+                  {isSelected && (
+                    <div className="absolute top-full mt-3 left-1/2 transform -translate-x-1/2 bg-slate-900/95 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap shadow-2xl border border-amber-500/50">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <Zap size={12} className="text-amber-400" />
+                          <span>{progress.speed.toFixed(1)} km/h</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock size={12} className="text-blue-400" />
+                          <span>ETA {progress.eta}m</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <TrendingUp size={12} className="text-green-400" />
+                          <span>{progress.progress.toFixed(0)}%</span>
+                        </div>
+                      </div>
+                      {/* Arrow pointer */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2">
+                        <div className="border-8 border-transparent border-b-slate-900/95" />
+                      </div>
+                    </div>
+                  )}
                 </button>
 
-                {/* Destination marker */}
+                {/* Destination Marker with Glow */}
                 <div
-                  className="absolute transform -translate-x-1/2 -translate-y-1/2 z-5"
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 z-10"
                   style={{
                     left: `${Math.max(0, Math.min(100, destLng))}%`,
                     top: `${Math.max(0, Math.min(100, 100 - destLat))}%`
                   }}
                 >
-                  <div className={`p-2 rounded-full ${
-                    isSelected ? 'bg-green-500' : 'bg-gray-400'
-                  } shadow-md`}>
-                    <MapPin size={16} className="text-white" />
+                  <div className={`relative p-3 rounded-full transition-all duration-300 ${
+                    isSelected
+                      ? 'bg-gradient-to-br from-emerald-400 to-green-500 scale-110'
+                      : 'bg-gradient-to-br from-slate-500 to-slate-600'
+                  } shadow-xl`}
+                    style={{
+                      boxShadow: isSelected
+                        ? '0 0 25px rgba(16, 185, 129, 0.7), 0 0 50px rgba(16, 185, 129, 0.3)'
+                        : 'none'
+                    }}
+                  >
+                    <MapPin size={20} className="text-white" />
                   </div>
+
+                  {/* Destination pulse */}
+                  {isSelected && (
+                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-50"
+                         style={{ animationDuration: '3s' }} />
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Legend */}
-        <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-md text-xs space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span>Current Location</span>
+        {/* Enhanced Legend */}
+        <div className="absolute bottom-6 right-6 bg-slate-900/90 backdrop-blur-md p-4 rounded-xl shadow-2xl text-xs space-y-2.5 border border-slate-600/50">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg"
+                 style={{ boxShadow: '0 0 12px rgba(59, 130, 246, 0.5)' }} />
+            <span className="text-slate-200 font-medium">Active Delivery</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span>Destination</span>
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 shadow-lg"
+                 style={{ boxShadow: '0 0 12px rgba(16, 185, 129, 0.5)' }} />
+            <span className="text-slate-200 font-medium">Destination</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
-            <span>Selected</span>
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg"
+                 style={{ boxShadow: '0 0 12px rgba(251, 146, 60, 0.5)' }} />
+            <span className="text-slate-200 font-medium">Selected Route</span>
+          </div>
+          <div className="pt-2 mt-2 border-t border-slate-700">
+            <div className="text-[10px] text-slate-400 flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span>Live GPS Tracking</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Selected Order Details */}
-      {selectedOrder && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <h3 className="font-semibold text-amber-900 mb-2">Selected Delivery</h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-amber-700">Order ID:</span>
-              <span className="ml-2 font-mono">{selectedOrder.id}</span>
-            </div>
-            <div>
-              <span className="text-amber-700">Quantity:</span>
-              <span className="ml-2 font-medium">{selectedOrder.quantity} units</span>
-            </div>
-            <div className="col-span-2">
-              <span className="text-amber-700">Destination:</span>
-              <span className="ml-2 font-mono text-xs">
-                {selectedOrder.deliveryLocation.lat.toFixed(6)}, {selectedOrder.deliveryLocation.lng.toFixed(6)}
+      {/* Enhanced Selected Order Details */}
+      {selectedOrder && (() => {
+        const progress = deliveryProgress.get(selectedOrder.id);
+        return (
+          <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-amber-900 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                Live Delivery Tracking
+              </h3>
+              <span className="px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full shadow-md">
+                IN TRANSIT
               </span>
             </div>
-            <div className="col-span-2">
-              <span className="text-amber-700">Current Position:</span>
-              <span className="ml-2 font-mono text-xs">
-                {currentPositions.get(selectedOrder.id)
-                  ? `${currentPositions.get(selectedOrder.id)!.lat.toFixed(6)}, ${currentPositions.get(selectedOrder.id)!.lng.toFixed(6)}`
-                  : 'Calculating...'}
-              </span>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-amber-200">
+                <div className="text-xs text-amber-700 font-medium mb-1">Order ID</div>
+                <div className="font-mono text-sm text-amber-900 font-bold">{selectedOrder.id}</div>
+              </div>
+              <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-amber-200">
+                <div className="text-xs text-amber-700 font-medium mb-1">Quantity</div>
+                <div className="text-sm text-amber-900 font-bold">{selectedOrder.quantity} units</div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            {progress && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-amber-700">Delivery Progress</span>
+                  <span className="text-xs font-bold text-amber-900">{progress.progress.toFixed(1)}%</span>
+                </div>
+                <div className="h-3 bg-amber-200 rounded-full overflow-hidden shadow-inner">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400 rounded-full transition-all duration-500 shadow-md"
+                    style={{
+                      width: `${progress.progress}%`,
+                      boxShadow: '0 0 10px rgba(251, 146, 60, 0.5)'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Live Metrics */}
+            {progress && (
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-3 shadow-md">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Zap size={14} />
+                    <span className="text-[10px] font-medium opacity-90">Speed</span>
+                  </div>
+                  <div className="text-lg font-bold">{progress.speed.toFixed(1)}</div>
+                  <div className="text-[9px] opacity-75">km/h</div>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-500 to-green-600 text-white rounded-lg p-3 shadow-md">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Clock size={14} />
+                    <span className="text-[10px] font-medium opacity-90">ETA</span>
+                  </div>
+                  <div className="text-lg font-bold">{progress.eta}</div>
+                  <div className="text-[9px] opacity-75">minutes</div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-3 shadow-md">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <TrendingUp size={14} />
+                    <span className="text-[10px] font-medium opacity-90">Status</span>
+                  </div>
+                  <div className="text-lg font-bold">{progress.progress < 30 ? 'Early' : progress.progress < 70 ? 'Mid' : 'Near'}</div>
+                  <div className="text-[9px] opacity-75">route</div>
+                </div>
+              </div>
+            )}
+
+            {/* Coordinates */}
+            <div className="space-y-2">
+              <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-amber-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPin size={14} className="text-green-600" />
+                  <span className="text-xs text-amber-700 font-medium">Destination</span>
+                </div>
+                <div className="font-mono text-[11px] text-amber-900 font-bold">
+                  {selectedOrder.deliveryLocation.lat.toFixed(6)}, {selectedOrder.deliveryLocation.lng.toFixed(6)}
+                </div>
+              </div>
+              {progress && (
+                <div className="bg-white/70 backdrop-blur-sm rounded-lg p-3 border border-amber-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Navigation size={14} className="text-blue-600" />
+                    <span className="text-xs text-amber-700 font-medium">Current Position</span>
+                  </div>
+                  <div className="font-mono text-[11px] text-amber-900 font-bold">
+                    {progress.lat.toFixed(6)}, {progress.lng.toFixed(6)}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
